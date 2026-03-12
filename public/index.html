@@ -116,13 +116,13 @@ document.getElementById('btnActivate').addEventListener('click', async () => {
       localStorage.setItem(ADMIN_TOKEN_KEY, result.adminToken || '');
       localStorage.setItem(ADMIN_MODE_KEY, 'yes');
       setMsg('Clé admin reconnue. Redirection vers le dashboard admin…', 'ok');
-      setTimeout(() => location.href = 'admin.html', 350);
+      setTimeout(() => location.href = '/admin.html', 350);
       return;
     }
     localStorage.setItem(SESSION_KEY, JSON.stringify({ token: result.token, deviceId, key }));
     localStorage.removeItem(ADMIN_MODE_KEY);
     setMsg('Licence activée avec succès. Redirection vers l’application…', 'ok');
-    setTimeout(() => location.href = 'app.html', 350);
+    setTimeout(() => location.href = '/app.html', 350);
   }catch(err){
     setMsg(err.message || 'Activation impossible.', 'bad');
   }
