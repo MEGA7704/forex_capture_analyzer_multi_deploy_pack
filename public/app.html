@@ -3063,7 +3063,11 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
 
   function getSession(){
     if(__fxaSession) return __fxaSession;
-    try{ __fxaSession = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }catch(e){ __fxaSession = null; }
+    try{
+      __fxaSession = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+    }catch(e){
+      __fxaSession = null;
+    }
     return __fxaSession;
   }
 
@@ -3074,29 +3078,54 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
       const res = await fetch('/api/license/report', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ token:sess.token, deviceId:sess.deviceId, eventType, payload: payload || {} })
+        body: JSON.stringify({
+          token: sess.token,
+          deviceId: sess.deviceId,
+          type: eventType,
+          detail: payload || {}
+        })
       });
       return await res.json().catch(()=>null);
-    }catch(e){ return null; }
+    }catch(e){
+      return null;
+    }
   }
 
   async function validateSession(){
     const sess = getSession();
+
     if(!sess || !sess.token || !sess.deviceId){
       alert('Session introuvable. Veuillez réactiver votre licence.');
       location.href = '/index.html';
       return;
     }
+
     try{
       const res = await fetch('/api/license/validate', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ token:sess.token, deviceId:sess.deviceId })
+        body: JSON.stringify({
+          token: sess.token,
+          deviceId: sess.deviceId
+        })
       });
-      const data = await res.json().catch(()=>({ ok:false, error:'Réponse serveur invalide.' }));
-      if(!res.ok || !data.ok || !data.valid){
+
+      const data = await res.json().catch(()=>({
+        ok:false,
+        error:'Réponse serveur invalide.'
+      }));
+
+      const accepted =
+        res.ok &&
+        (
+          data.ok === true ||
+          !!data.license
+        );
+
+      if(!accepted){
         throw new Error(data.error || 'Session invalide.');
       }
+
       window.FXA_LICENSE = data.license || null;
     }catch(err){
       alert(err.message || 'Session invalide. Veuillez réactiver votre licence.');
@@ -3111,12 +3140,13 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
     const el = e.target.closest('button,[id]');
     if(!el) return;
     const id = el.id || '';
+
     if(id === 'btnAnalyze'){
-      postLicenseEvent('analysis_run', { source:'ui', ts: new Date().toISOString() });
+      postLicenseEvent('analysis_run', { source:'ui', ts:new Date().toISOString() });
     }else if(id === 'btnSupportReport'){
-      postLicenseEvent('error_report', { source:'support', ts: new Date().toISOString() });
+      postLicenseEvent('error_report', { source:'support', ts:new Date().toISOString() });
     }else if(id === 'btnSupportSOS'){
-      postLicenseEvent('sos_report', { source:'support', ts: new Date().toISOString() });
+      postLicenseEvent('sos_report', { source:'support', ts:new Date().toISOString() });
     }
   }, true);
 })();
