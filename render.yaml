@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: forex-capture-analyzer-pro-render
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: LICENSE_SECRET
+        generateValue: true
+      - key: ADMIN_TOKEN
+        generateValue: true
+      - key: ADMIN_MASTER_KEY
+        sync: false

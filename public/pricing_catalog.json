@@ -1,0 +1,71 @@
+{
+  "source": "https://forexanalyzer.e-monsite.com/pages/tarifs.html",
+  "captured_at": "2026-03-10",
+  "currency": "USDT",
+  "plans": [
+    {
+      "plan_id": "CAPTURE_5",
+      "label": "5 Captures",
+      "price_usdt": 2,
+      "mode": "count",
+      "analysis_limit": 5,
+      "duration_days": 365
+    },
+    {
+      "plan_id": "CAPTURE_25",
+      "label": "25 Captures",
+      "price_usdt": 8,
+      "mode": "count",
+      "analysis_limit": 25,
+      "duration_days": 365
+    },
+    {
+      "plan_id": "CAPTURE_50",
+      "label": "50 Captures",
+      "price_usdt": 15,
+      "mode": "count",
+      "analysis_limit": 50,
+      "duration_days": 365
+    },
+    {
+      "plan_id": "CAPTURE_100",
+      "label": "100 Captures",
+      "price_usdt": 25,
+      "mode": "count",
+      "analysis_limit": 100,
+      "duration_days": 365
+    },
+    {
+      "plan_id": "ACCESS_30_DAYS",
+      "label": "30 jours",
+      "price_usdt": 60,
+      "mode": "time",
+      "analysis_limit": null,
+      "duration_days": 30
+    },
+    {
+      "plan_id": "ACCESS_90_DAYS",
+      "label": "90 jours",
+      "price_usdt": 175,
+      "mode": "time",
+      "analysis_limit": null,
+      "duration_days": 90
+    },
+    {
+      "plan_id": "ACCESS_190_DAYS",
+      "label": "190 jours",
+      "price_usdt": 355,
+      "mode": "time",
+      "analysis_limit": null,
+      "duration_days": 190
+    },
+    {
+      "plan_id": "ACCESS_365_DAYS",
+      "label": "365 jours",
+      "price_usdt": 675,
+      "mode": "time",
+      "analysis_limit": null,
+      "duration_days": 365
+    }
+  ]
+}
