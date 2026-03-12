@@ -46,6 +46,20 @@ tbody tr:hover{background:rgba(255,255,255,.04)}
 @media(max-width:980px){.grid{grid-template-columns:repeat(2,minmax(170px,1fr));}}
 </style>
 </head>
+  <script>
+(function(){
+  const TOKEN_KEY = 'FXA_ADMIN_TOKEN_V27';
+  const MODE_KEY = 'FXA_ADMIN_MODE_V27';
+
+  const token = localStorage.getItem(TOKEN_KEY) || '';
+  const mode = localStorage.getItem(MODE_KEY) || '';
+
+  if(mode !== 'yes' || !token){
+    alert('Accès admin non autorisé.');
+    location.href = '/index.html';
+  }
+})();
+</script>
 <body>
 <div class="wrap">
   <div class="card">
@@ -113,7 +127,7 @@ tbody tr:hover{background:rgba(255,255,255,.04)}
         <option value="block">block</option>
         <option value="unblock">unblock</option>
         <option value="reset_device">reset_device</option>
-        <option value="extend">extend</option>
+        <option value="extend_days">extend_days</option>
       </select>
       <input id="actionDays" type="number" placeholder="jours (extend)" value="30" style="width:130px"/>
       <input id="actionReason" placeholder="Motif admin" style="min-width:260px"/>
