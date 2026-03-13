@@ -50,11 +50,13 @@ button:hover,a.btn:hover{transform:translateY(-1px);box-shadow:0 12px 24px rgba(
 </style>
 </head>
 <body>
-  <div class="panel">
-    <div class="hero">
-      <h1>Connexion </h1>
-      <p>Forex Capture Analyzer PRO </b>. 
-    </div>
+<div class="panel">
+  <div class="hero">
+    <h1 class="title-main">Connexion</h1>
+    <div class="separator"></div>
+    <h1 class="title-app">Forex Capture Analyzer PRO</h1>
+  </div>
+</div>
     <div class="form">
       <label for="licenseKey">Entrez votre clé</label>
       <input id="licenseKey" type="text" placeholder="Ex. FXA-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false" />
@@ -70,14 +72,7 @@ button:hover,a.btn:hover{transform:translateY(-1px);box-shadow:0 12px 24px rgba(
       <div class="small">Astuce : après activation, l’ouverture se fera automatiquement vers l’application.</div>
     </div>
   </div>
-        <footer class="footer">
-        <div class="footer-line"></div>
-        <div class="footer-row">
-          <div>© <span id="year"></span> Forex Capture Analyzer PRO • MEGA SERVICES SARL U</div>
-        </div>
-      </footer>
-    </section>
-  </main>
+
 <script>
 const SESSION_KEY = 'FXA_V27_SESSION';
 const ADMIN_TOKEN_KEY = 'FXA_ADMIN_TOKEN_V27';
