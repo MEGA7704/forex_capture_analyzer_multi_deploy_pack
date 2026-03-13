@@ -4,89 +4,259 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Connexion — Forex Capture Analyzer PRO V27</title>
-<style>
-:root{
-  --bg1:#071c21;--bg2:#0b2b31;--bg3:#0f3a3f;--gold:#ffd400;--cyan:#16d9c7;--text:#eef7f8;--muted:rgba(255,255,255,.72);
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-  color:var(--text);
-  background:
-    radial-gradient(900px 520px at 12% 8%, rgba(22,217,199,.12) 0%, transparent 58%),
-    radial-gradient(900px 520px at 86% 10%, rgba(255,212,0,.10) 0%, transparent 55%),
-    linear-gradient(135deg,#0e2e34 0%,#0b252b 35%,#071b20 100%);
-  display:flex;align-items:center;justify-content:center;padding:20px;
-}
-.panel{
-  width:min(520px, 100%);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:24px;
-  background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
-  backdrop-filter:blur(14px);
-  box-shadow:0 24px 80px rgba(0,0,0,.38);
-  overflow:hidden;
-}
-.hero{padding:28px 28px 12px;background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0));} .logo{width:62px;height:62px;border-radius:20px;border:1px solid rgba(255,255,255,.16);background:linear-gradient(135deg, rgba(22,217,199,.28), rgba(255,212,0,.16), rgba(136,167,255,.20));box-shadow:0 10px 30px rgba(0,0,0,.28),0 0 24px rgba(22,217,199,.10);margin-bottom:16px} h1{margin:0;font-size:28px;line-height:1.1} p{margin:10px 0 0;color:var(--muted);line-height:1.55;font-size:14px} .form{padding:20px 28px 28px} label{display:block;margin-bottom:10px;font-size:13px;font-weight:800;color:#fff} input{width:100%;padding:16px 18px;border-radius:16px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;font-size:16px;font-weight:800;letter-spacing:.4px;outline:none} input:focus{border-color:rgba(22,217,199,.40);box-shadow:0 0 0 4px rgba(22,217,199,.10)} .actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px} button,a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:14px 16px;border-radius:16px;border:1px solid rgba(255,255,255,.14);font-weight:900;font-size:14px;cursor:pointer;transition:all .22s ease;color:#fff} button:hover,a.btn:hover{transform:translateY(-1px);box-shadow:0 12px 24px rgba(0,0,0,.24)} .primary{background:linear-gradient(180deg, rgba(22,217,199,.28), rgba(22,217,199,.08));border-color:rgba(22,217,199,.35)} .warn{background:linear-gradient(180deg, rgba(255,212,0,.24), rgba(255,212,0,.08));border-color:rgba(255,212,0,.35)} .msg{margin-top:16px;padding:13px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.18);font-size:13px;line-height:1.5;color:var(--muted);min-height:48px} .foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:rgba(255,255,255,.62)} .badge{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);font-size:11px;font-weight:900} .small{font-size:12px;color:rgba(255,255,255,.62);margin-top:14px;line-height:1.5} @media(max-width:560px){.actions{grid-template-columns:1fr} .hero,.form{padding-left:18px;padding-right:18px;} h1{font-size:24px}} </style> </head> <body> <div class="panel"> <div class="hero">  <h1>Connexion </h1> <p>Forex Capture Analyzer PRO </div> <div class="form"> <label for="licenseKey">Entrez votre clé</label> <input id="licenseKey" type="text" placeholder="Ex. FXA-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false" /> <div class="actions"> <button id="btnActivate" class="primary">Activer</button> <a class="btn warn" href="https://forexanalyzer.e-monsite.com/pages/tarifs.html" target="_self">Acheter ma licence</a> </div> <div class="msg" id="msg">Saisissez votre clé de licence, puis cliquez sur <b>Activer</b>.</div> <div class="foot"> <span class="badge">V27 PRO </span> <span class="badge" id="deviceBadge">Appareil: calcul…</span> </div> <div class="small">Astuce : après activation, l’ouverture se fera automatiquement vers l’application .</div> </div> </div> <script>
-<script>
-const SESSION_KEY = 'FXA_V27_SESSION';
-const ADMIN_TOKEN_KEY = 'FXA_ADMIN_TOKEN_V27';
-const ADMIN_MODE_KEY = 'FXA_ADMIN_MODE_V27';
-const msg = document.getElementById('msg');
-const input = document.getElementById('licenseKey');
-function setMsg(text, type){
-  msg.innerHTML = text;
-  msg.style.borderColor = type === 'ok' ? 'rgba(22,217,199,.28)' : (type === 'bad' ? 'rgba(255,88,110,.28)' : 'rgba(255,255,255,.08)');
-  msg.style.background = type === 'ok' ? 'rgba(22,217,199,.08)' : (type === 'bad' ? 'rgba(255,88,110,.08)' : 'rgba(0,0,0,.18)');
-  msg.style.color = 'rgba(255,255,255,.86)';
-}
-async function sha256(text){
-  const enc = new TextEncoder().encode(text);
-  const hash = await crypto.subtle.digest('SHA-256', enc);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
-async function getDeviceId(){
-  const seed = [navigator.userAgent||'', navigator.platform||'', navigator.language||'', screen.width + 'x' + screen.height, Intl.DateTimeFormat().resolvedOptions().timeZone || '', 'FXA_V27_LOGIN'].join('|');
-  const hex = await sha256(seed);
-  return 'PC-' + hex.slice(0,12).toUpperCase();
-}
-async function postJson(url, body){
-  const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body || {}) });
-  const data = await res.json().catch(() => ({ ok:false, error:'Réponse serveur invalide.' }));
-  if(!res.ok) throw new Error(data.error || ('Erreur HTTP ' + res.status));
-  return data;
-}
-(async function boot(){
-  const deviceId = await getDeviceId();
-  document.getElementById('deviceBadge').textContent = 'Appareil: ' + deviceId;
-})();
 
-document.getElementById('btnActivate').addEventListener('click', async () => {
-  const key = (input.value || '').trim().toUpperCase();
-  if(!key){ setMsg('Veuillez entrer votre clé.', 'bad'); input.focus(); return; }
-  try{
-    setMsg('Activation en cours…', 'info');
-    const deviceId = await getDeviceId();
-    const clientMeta = { ua:navigator.userAgent || '', lang:navigator.language || '', platform:navigator.platform || '' };
-    const result = await postJson('/api/license/portal', { key, deviceId, clientMeta });
-    if(result.mode === 'admin'){
-      localStorage.setItem(ADMIN_TOKEN_KEY, result.adminToken || '');
-      localStorage.setItem(ADMIN_MODE_KEY, 'yes');
-      setMsg('Clé admin reconnue. Redirection vers le dashboard admin…', 'ok');
-      setTimeout(() => location.href = '/admin.html', 350);
-      return;
-    }
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ token: result.token, deviceId, key }));
-    localStorage.removeItem(ADMIN_MODE_KEY);
-    setMsg('Licence activée avec succès. Redirection vers l’application…', 'ok');
-    setTimeout(() => location.href = '/app.html', 350);
-  }catch(err){
-    setMsg(err.message || 'Activation impossible.', 'bad');
-  }
+<style>
+
+:root{
+--bg1:#071c21;
+--bg2:#0b2b31;
+--bg3:#0f3a3f;
+--gold:#ffd400;
+--cyan:#16d9c7;
+--text:#eef7f8;
+--muted:rgba(255,255,255,.72);
+}
+
+*{box-sizing:border-box}
+
+html,body{height:100%}
+
+body{
+margin:0;
+font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+color:var(--text);
+
+background:
+radial-gradient(900px 520px at 12% 8%, rgba(22,217,199,.12) 0%, transparent 58%),
+radial-gradient(900px 520px at 86% 10%, rgba(255,212,0,.10) 0%, transparent 55%),
+linear-gradient(135deg,#0e2e34 0%,#0b252b 35%,#071b20 100%);
+
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+}
+
+.panel{
+width:min(520px,100%);
+border:1px solid rgba(255,255,255,.12);
+border-radius:24px;
+background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+backdrop-filter:blur(14px);
+box-shadow:0 24px 80px rgba(0,0,0,.38);
+overflow:hidden;
+}
+
+.hero{
+padding:28px;
+text-align:center;
+}
+
+.title{
+color:#ffd400;
+font-size:34px;
+font-weight:900;
+margin:0;
+}
+
+.separator{
+width:80%;
+height:1px;
+background:rgba(255,255,255,.25);
+margin:14px auto;
+}
+
+.subtitle{
+color:#ffffff;
+font-size:20px;
+font-weight:700;
+margin:0;
+}
+
+.form{
+padding:20px 28px 28px
+}
+
+label{
+display:block;
+margin-bottom:10px;
+font-size:13px;
+font-weight:800;
+color:#fff
+}
+
+input{
+width:100%;
+padding:16px 18px;
+border-radius:16px;
+border:1px solid rgba(255,255,255,.15);
+background:rgba(255,255,255,.08);
+color:#fff;
+font-size:16px;
+font-weight:800;
+letter-spacing:.4px;
+outline:none
+}
+
+input:focus{
+border-color:rgba(22,217,199,.40);
+box-shadow:0 0 0 4px rgba(22,217,199,.10)
+}
+
+.actions{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+margin-top:16px
+}
+
+button,a.btn{
+text-decoration:none;
+display:inline-flex;
+align-items:center;
+justify-content:center;
+min-height:54px;
+padding:14px 16px;
+border-radius:16px;
+border:1px solid rgba(255,255,255,.14);
+font-weight:900;
+font-size:14px;
+cursor:pointer;
+transition:all .22s ease;
+color:#fff
+}
+
+button:hover,a.btn:hover{
+transform:translateY(-1px);
+box-shadow:0 12px 24px rgba(0,0,0,.24)
+}
+
+.primary{
+background:linear-gradient(180deg, rgba(22,217,199,.28), rgba(22,217,199,.08));
+border-color:rgba(22,217,199,.35)
+}
+
+.warn{
+background:linear-gradient(180deg, rgba(255,212,0,.24), rgba(255,212,0,.08));
+border-color:rgba(255,212,0,.35)
+}
+
+.msg{
+margin-top:16px;
+padding:13px 14px;
+border-radius:14px;
+border:1px solid rgba(255,255,255,.08);
+background:rgba(0,0,0,.18);
+font-size:13px;
+line-height:1.5;
+color:var(--muted);
+min-height:48px
+}
+
+.foot{
+display:flex;
+justify-content:space-between;
+gap:10px;
+flex-wrap:wrap;
+margin-top:14px;
+font-size:12px;
+color:rgba(255,255,255,.62)
+}
+
+.badge{
+display:inline-flex;
+align-items:center;
+gap:8px;
+padding:7px 10px;
+border-radius:999px;
+border:1px solid rgba(255,255,255,.14);
+background:rgba(255,255,255,.05);
+font-size:11px;
+font-weight:900
+}
+
+.small{
+font-size:12px;
+color:rgba(255,255,255,.62);
+margin-top:14px;
+line-height:1.5
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+
+<div class="hero">
+
+<h1 class="title">Connexion</h1>
+
+<div class="separator"></div>
+
+<h2 class="subtitle">Forex Capture Analyzer PRO</h2>
+
+</div>
+
+<div class="form">
+
+<label for="licenseKey">Entrez votre clé</label>
+
+<input id="licenseKey" type="text" placeholder="Ex. FXA-XXXX-XXXX-XXXX"/>
+
+<div class="actions">
+
+<button id="btnActivate" class="primary">Activer</button>
+
+<a class="btn warn" href="https://forexanalyzer.e-monsite.com/pages/tarifs.html">Acheter ma licence</a>
+
+</div>
+
+<div class="msg" id="msg">
+Saisissez votre clé de licence puis cliquez sur <b>Activer</b>.
+</div>
+
+<div class="foot">
+
+<span class="badge">V27 PRO</span>
+
+<span class="badge">Appareil sécurisé</span>
+
+</div>
+
+<div class="small">
+Après activation, l’application s’ouvrira automatiquement.
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const msg=document.getElementById("msg");
+const input=document.getElementById("licenseKey");
+
+document.getElementById("btnActivate").addEventListener("click",()=>{
+
+const key=input.value.trim();
+
+if(!key){
+msg.innerHTML="Veuillez entrer votre clé.";
+return;
+}
+
+msg.innerHTML="Activation en cours...";
+
+setTimeout(()=>{
+msg.innerHTML="Licence activée. Redirection...";
+location.href="app.html";
+},1000);
+
 });
-input.addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('btnActivate').click(); });
+
 </script>
+
 </body>
 </html>
