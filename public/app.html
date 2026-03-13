@@ -3227,12 +3227,15 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
     }
   }
 
+  function doDashboardLogout(){
+    try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+    try{ localStorage.removeItem('FXA_ADMIN_MODE_V28'); }catch(e){}
+    try{ localStorage.removeItem('FXA_ADMIN_TOKEN_V28'); }catch(e){}
+    location.href = '/index.html';
+  }
+
   document.addEventListener('DOMContentLoaded', function(){
     validateSession();
-    document.getElementById('btnDashboardLogout')?.addEventListener('click', function(){
-      try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
-      location.href = '/index.html';
-    });
   });
   setInterval(()=>{ try{ validateSession(); }catch(e){} }, 30000);
 
@@ -3240,6 +3243,11 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
     const el = e.target.closest('button,[id]');
     if(!el) return;
     const id = el.id || '';
+    if(id === 'btnDashboardLogout'){
+      e.preventDefault();
+      doDashboardLogout();
+      return;
+    }
     if(id === 'btnAnalyze'){
       postLicenseEvent('analysis_run', { source:'ui', ts: new Date().toISOString() });
     }else if(id === 'btnSupportReport'){
