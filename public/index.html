@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Connexion — Forex Capture Analyzer PRO V27</title>
+<title>Connexion — Forex Capture Analyzer PRO V28 ULTRA</title>
 <style>
 :root{
   --bg1:#071c21;--bg2:#0b2b31;--bg3:#0f3a3f;--gold:#ffd400;--cyan:#16d9c7;--text:#eef7f8;--muted:rgba(255,255,255,.72);
@@ -53,8 +53,8 @@ button:hover,a.btn:hover{transform:translateY(-1px);box-shadow:0 12px 24px rgba(
   <div class="panel">
     <div class="hero">
       <div class="logo"></div>
-      <h1>Connexion simple</h1>
-      <p>Entrez votre clé pour activer <b>Forex Capture Analyzer PRO V27 ULTRA SaaS</b>. La même zone accepte aussi la <b>clé admin spéciale</b> pour ouvrir directement le dashboard admin.</p>
+      <h1>Connexion Premium Ultra</h1>
+      <p>Entrez votre clé pour activer <b>Forex Capture Analyzer PRO V28 ULTRA SaaS</b>. La même zone accepte aussi la <b>clé admin spéciale</b> pour ouvrir directement le dashboard admin.</p>
     </div>
     <div class="form">
       <label for="licenseKey">Entrez votre clé</label>
@@ -72,9 +72,9 @@ button:hover,a.btn:hover{transform:translateY(-1px);box-shadow:0 12px 24px rgba(
     </div>
   </div>
 <script>
-const SESSION_KEY = 'FXA_V27_SESSION';
-const ADMIN_TOKEN_KEY = 'FXA_ADMIN_TOKEN_V27';
-const ADMIN_MODE_KEY = 'FXA_ADMIN_MODE_V27';
+const SESSION_KEY = 'FXA_V28_SESSION';
+const ADMIN_TOKEN_KEY = 'FXA_ADMIN_TOKEN_V28';
+const ADMIN_MODE_KEY = 'FXA_ADMIN_MODE_V28';
 const msg = document.getElementById('msg');
 const input = document.getElementById('licenseKey');
 function setMsg(text, type){
@@ -89,7 +89,7 @@ async function sha256(text){
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 async function getDeviceId(){
-  const seed = [navigator.userAgent||'', navigator.platform||'', navigator.language||'', screen.width + 'x' + screen.height, Intl.DateTimeFormat().resolvedOptions().timeZone || '', 'FXA_V27_LOGIN'].join('|');
+  const seed = [navigator.userAgent||'', navigator.platform||'', navigator.language||'', screen.width + 'x' + screen.height, Intl.DateTimeFormat().resolvedOptions().timeZone || '', 'FXA_V28_LOGIN'].join('|');
   const hex = await sha256(seed);
   return 'PC-' + hex.slice(0,12).toUpperCase();
 }
@@ -108,7 +108,7 @@ document.getElementById('btnActivate').addEventListener('click', async () => {
   const key = (input.value || '').trim().toUpperCase();
   if(!key){ setMsg('Veuillez entrer votre clé.', 'bad'); input.focus(); return; }
   try{
-    setMsg('Activation en cours…', 'info');
+    setMsg('Vérification premium en cours…', 'info');
     const deviceId = await getDeviceId();
     const clientMeta = { ua:navigator.userAgent || '', lang:navigator.language || '', platform:navigator.platform || '' };
     const result = await postJson('/api/license/portal', { key, deviceId, clientMeta });
@@ -121,10 +121,15 @@ document.getElementById('btnActivate').addEventListener('click', async () => {
     }
     localStorage.setItem(SESSION_KEY, JSON.stringify({ token: result.token, deviceId, key }));
     localStorage.removeItem(ADMIN_MODE_KEY);
-    setMsg('Licence activée avec succès. Redirection vers l’application…', 'ok');
+    setMsg('Licence validée avec succès. Redirection vers l’application…', 'ok');
     setTimeout(() => location.href = 'app.html', 350);
   }catch(err){
-    setMsg(err.message || 'Activation impossible.', 'bad');
+    const message = err.message || 'Activation impossible.';
+    if(/expir|quota|captures/i.test(message)) {
+      setMsg('⚠️ <b>Licence expirée</b><br>Votre licence Forex Capture Analyzer PRO est arrivée à expiration.<br>Pour continuer à utiliser toutes les fonctionnalités d’analyse avancée, veuillez renouveler votre licence.<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px"><a class="btn warn" href="https://forexanalyzer.e-monsite.com/pages/tarifs.html" target="_self">Renouveler ma licence</a><a class="btn primary" href="https://forexanalyzer.e-monsite.com/pages/contact-support.html" target="_self">Contacter le support</a></div>', 'bad');
+      return;
+    }
+    setMsg(message, 'bad');
   }
 });
 input.addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('btnActivate').click(); });

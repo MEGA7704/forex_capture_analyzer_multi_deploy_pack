@@ -1135,7 +1135,10 @@ select:focus, input[type="number"]:focus, input[type="url"]:focus, #activationKe
 <template id="tpl_dashboard">
   <div class="row" style="justify-content:space-between; gap:10px; flex-wrap:wrap">
     <div class="note"><b>Dashboard licence & activité en temps réel</b></div>
-    <div class="chip" id="dashLastUpdate">—</div>
+    <div class="row" style="gap:10px; flex-wrap:wrap">
+      <div class="chip" id="dashLastUpdate">—</div>
+      <button class="btn bad" id="btnDashboardLogout" type="button">Déconnexion</button>
+    </div>
   </div>
 
   <div class="popupSectionTitle" style="margin-top:12px">Suivi global de votre licence</div>
@@ -1171,7 +1174,7 @@ select:focus, input[type="number"]:focus, input[type="url"]:focus, #activationKe
     <div class="kv"><span>Confiance moyenne</span><b id="d_avg_conf">0%</b></div>
     <div class="kv"><span>Symbole fréquent</span><b id="d_symbol">—</b></div>
   </div>
-  <div class="note" style="margin-top:12px">La partie licence vient du serveur. La partie activité locale est alimentée automatiquement par les analyses sauvegardées dans votre navigateur.</div>
+  <div id="lic_warning_box" class="note" style="margin-top:12px;border:1px solid rgba(255,255,255,.10);padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04)">La partie licence vient du serveur. La partie activité locale est alimentée automatiquement par les analyses sauvegardées dans votre navigateur.</div>
 </template>
 
 <template id="tpl_read_analysis">
@@ -2475,16 +2478,19 @@ function renderDashboard(){
   const planLabel = lic?.plan_label || lic?.plan_id || '—';
   const purchased = Number(lic?.analysis_limit ?? 0);
   const used = Number(lic?.analysis_count ?? 0);
-  const remaining = lic?.mode === 'count'
+  const remainingNumeric = lic?.mode === 'count'
     ? Number(lic?.analyses_remaining ?? Math.max(0, purchased - used))
-    : 'Illimité';
+    : null;
+  const remaining = lic?.mode === 'count' ? remainingNumeric : 'Illimité';
   const modeLabel = lic?.mode === 'count' ? 'Par captures' : (lic?.mode === 'duration' ? 'Par durée' : '—');
   const shortKey = lic?.license_key ? String(lic.license_key).replace(/^(.{4}).+(.{4})$/, '$1••••••$2') : '—';
+  const statusRaw = String(lic?.status || '').toUpperCase();
+  const statusLabel = statusRaw === 'ACTIVE' ? 'ACTIVE' : (statusRaw === 'EXPIRED' ? 'EXPIRED' : (statusRaw === 'QUOTA_REACHED' ? 'EXPIRED' : (statusRaw || '—')));
 
   set('d_total', total); set('d_buy', buys); set('d_sell', sells); set('d_wait', waits); set('d_avg_score', avgScore); set('d_avg_risk', avgRisk); set('d_avg_conf', avgConf + '%'); set('d_symbol', topSymbol);
   set('lic_key_short', shortKey);
   set('lic_plan', planLabel);
-  set('lic_status', lic?.status || '—');
+  set('lic_status', statusLabel);
   set('lic_mode', modeLabel);
   set('lic_activated', fmtDate(lic?.activated_at));
   set('lic_expiration', fmtDateShort(lic?.expiration));
@@ -2494,6 +2500,30 @@ function renderDashboard(){
   set('lic_used', used);
   set('lic_remaining', remaining);
   set('lic_sessions', Number(lic?.session_count || 0));
+
+  const warnBox = document.getElementById('lic_warning_box');
+  if(warnBox){
+    let html = 'La partie licence vient du serveur. La partie activité locale est alimentée automatiquement par les analyses sauvegardées dans votre navigateur.';
+    let border = 'rgba(255,255,255,.10)';
+    let bg = 'rgba(255,255,255,.04)';
+    if(lic?.mode === 'count' && typeof remainingNumeric === 'number'){
+      const low = remainingNumeric <= 5 || (purchased > 0 && remainingNumeric / Math.max(purchased,1) <= 0.15);
+      if(remainingNumeric <= 0){
+        html = '<b style="color:#ff7d8d">Alerte critique :</b> votre quota est épuisé. Renouvelez votre licence pour continuer.';
+        border = 'rgba(255,91,110,.35)'; bg = 'rgba(255,91,110,.10)';
+      }else if(low){
+        html = '<b style="color:#ffd46d">Alerte :</b> quota presque atteint. Il vous reste <b>' + remainingNumeric + '</b> capture(s).';
+        border = 'rgba(255,204,102,.35)'; bg = 'rgba(255,204,102,.10)';
+      }
+    }
+    if(statusLabel === 'EXPIRED'){
+      html = '<b style="color:#ff7d8d">Licence expirée :</b> l’accès premium est verrouillé tant que la licence n’est pas renouvelée.';
+      border = 'rgba(255,91,110,.35)'; bg = 'rgba(255,91,110,.10)';
+    }
+    warnBox.innerHTML = html;
+    warnBox.style.borderColor = border;
+    warnBox.style.background = bg;
+  }
 
   const up = document.getElementById('dashLastUpdate');
   if(up){
@@ -3104,7 +3134,7 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
 
 <script>
 (function(){
-  const SESSION_KEY = 'FXA_V27_SESSION';
+  const SESSION_KEY = 'FXA_V28_SESSION';
   let __fxaSession = null;
 
   function getSession(){
@@ -3114,11 +3144,32 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
   }
 
   function forceCloseApp(message){
-    const msg = message || 'Votre licence a expiré ou votre quota de captures est épuisé. L'application va se fermer.';
-    try{ alert(msg); }catch(e){}
+    const msg = message || 'Votre licence a expiré ou votre quota de captures est épuisé.';
     try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
-    try{ document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#071c21;color:#fff;font-family:Inter,Arial,sans-serif;padding:24px"><div style="max-width:560px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:26px;box-shadow:0 18px 50px rgba(0,0,0,.35)"><div style="font-size:24px;font-weight:800;color:#ffd400;margin-bottom:10px;text-align:center">Accès fermé</div><div style="height:1px;background:rgba(255,255,255,.12);margin:12px 0 16px"></div><div style="font-size:15px;line-height:1.6;text-align:center">' + String(msg).replace(/</g,'&lt;') + '</div><div style="margin-top:18px;text-align:center"><a href="/index.html" style="display:inline-block;padding:12px 18px;border-radius:12px;background:#ffd400;color:#071c21;font-weight:800;text-decoration:none">Retour à l'activation</a></div></div></div>'; }catch(e){}
-    setTimeout(()=>{ try{ location.href = '/index.html'; }catch(e){} }, 1600);
+    const safeMsg = String(msg).replace(/</g,'&lt;');
+    try{
+      document.body.innerHTML = `
+        <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;background:radial-gradient(1100px 600px at 12% 10%, rgba(22,217,199,.14), transparent 58%),radial-gradient(980px 580px at 88% 10%, rgba(255,212,0,.10), transparent 55%),linear-gradient(145deg,#071c21 0%,#0b252b 42%,#07151a 100%);color:#fff;font-family:Inter,Arial,sans-serif">
+          <div style="width:min(760px,100%);border:1px solid rgba(255,255,255,.12);border-radius:26px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));box-shadow:0 26px 90px rgba(0,0,0,.45)">
+            <div style="padding:30px 30px 18px;background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0))">
+              <div style="width:72px;height:72px;border-radius:22px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(135deg, rgba(255,91,110,.28), rgba(255,212,0,.18), rgba(136,167,255,.18));box-shadow:0 14px 38px rgba(0,0,0,.28)"></div>
+              <div style="margin-top:18px;display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,91,110,.22);background:rgba(255,91,110,.10);font-size:12px;font-weight:900;letter-spacing:.4px">ACCÈS PREMIUM BLOQUÉ</div>
+              <div style="margin-top:14px;font-size:34px;line-height:1.1;font-weight:1000;color:#ffd400">Licence expirée</div>
+              <div style="height:1px;background:rgba(255,255,255,.12);margin:16px 0 18px"></div>
+              <div style="font-size:17px;line-height:1.7;color:rgba(255,255,255,.90)">Votre licence <b>Forex Capture Analyzer PRO</b> est arrivée à expiration.<br>Pour continuer à utiliser toutes les fonctionnalités d’analyse avancée, veuillez renouveler votre licence.</div>
+            </div>
+            <div style="padding:0 30px 30px">
+              <div style="padding:16px 18px;border-radius:18px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.18);font-size:14px;line-height:1.6;color:rgba(255,255,255,.84)"><b>Détail du verrouillage :</b> ${safeMsg}</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:18px">
+                <a href="https://forexanalyzer.e-monsite.com/pages/tarifs.html" style="text-decoration:none;display:flex;align-items:center;justify-content:center;min-height:58px;border-radius:16px;padding:14px 16px;background:linear-gradient(180deg, rgba(255,212,0,.26), rgba(255,212,0,.10));border:1px solid rgba(255,212,0,.36);color:#fff;font-weight:1000">Renouveler ma licence</a>
+                <a href="https://forexanalyzer.e-monsite.com/pages/contact-support.html" style="text-decoration:none;display:flex;align-items:center;justify-content:center;min-height:58px;border-radius:16px;padding:14px 16px;background:linear-gradient(180deg, rgba(22,217,199,.24), rgba(22,217,199,.10));border:1px solid rgba(22,217,199,.34);color:#fff;font-weight:1000">Contacter le support</a>
+              </div>
+              <div style="margin-top:16px;font-size:12px;color:rgba(255,255,255,.62);text-align:center">Redirection automatique vers la boutique dans quelques secondes…</div>
+            </div>
+          </div>
+        </div>`;
+    }catch(e){}
+    setTimeout(()=>{ try{ location.href = 'https://forexanalyzer.e-monsite.com/pages/tarifs.html'; }catch(e){} }, 4500);
   }
 
   async function postLicenseEvent(eventType, payload){
@@ -3176,7 +3227,13 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
     }
   }
 
-  document.addEventListener('DOMContentLoaded', validateSession);
+  document.addEventListener('DOMContentLoaded', function(){
+    validateSession();
+    document.getElementById('btnDashboardLogout')?.addEventListener('click', function(){
+      try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+      location.href = '/index.html';
+    });
+  });
   setInterval(()=>{ try{ validateSession(); }catch(e){} }, 30000);
 
   document.addEventListener('click', function(e){
