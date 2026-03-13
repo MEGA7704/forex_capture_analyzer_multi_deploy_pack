@@ -118,8 +118,8 @@ app.post('/api/license/validate', async (req, res) => {
 app.post('/api/license/report', async (req, res) => {
   try{
     const token = String(req.body?.token || '').trim();
- const type = String(req.body?.type || req.body?.eventType || 'analysis_run').trim();
-const detail = req.body?.detail || req.body?.payload || {};
+    const type = String(req.body?.type || req.body?.eventType || 'analysis_run').trim();
+    const detail = req.body?.detail || req.body?.payload || {};
     const deviceId = String(req.body?.deviceId || '').trim();
     const payload = verifyToken(token, LICENSE_SECRET);
     const license = await getLicense(payload.sub);

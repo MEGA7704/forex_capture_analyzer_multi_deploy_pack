@@ -1,3 +1,5 @@
+Forex Capture Analyzer Premium — Vrai système temps réel V28
+
 # Forex Capture Analyzer PRO — Pack Render prêt à déployer
 
 Ce pack répond exactement à ces attentes :
@@ -45,3 +47,9 @@ Après déploiement :
 - `/` ouvre la page de connexion
 - `/health` doit répondre avec `ok: true`
 - la clé admin ouvre `admin.html`
+
+
+Mise à jour V28 :
+- Dashboard client avec suivi licence en temps réel par rafraîchissement automatique.
+- Dashboard admin avec actualisation automatique des statistiques et de la liste des licences.
+- Popup support épuré.

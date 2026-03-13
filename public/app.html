@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Forex Capture Analyzer — v23 Ultra Pro</title>
+<title>Forex Capture Analyzer Premium — Vrai système temps réel V28</title>
 <style>
   :root{
     --bg1:#0b1020; --bg2:#0d2b2b; --bg3:#1a0f2e;
@@ -1036,7 +1036,7 @@ select:focus, input[type="number"]:focus, input[type="url"]:focus, #activationKe
       <div class="brand">
         <div class="logo"></div>
         <div class="title">
-          <h1>Forex Capture Analyzer Pro</h1>
+          <h1>Forex Capture Analyzer Premium — Vrai système temps réel V28</h1>
           <div class="sub"></div>
         </div>
       </div>
@@ -1102,7 +1102,7 @@ select:focus, input[type="number"]:focus, input[type="url"]:focus, #activationKe
     </div>
   </section>
 
-  <button class="supportFab" id="btnSupportFab" type="button" title="Support V26 Ultra Pro">
+  <button class="supportFab" id="btnSupportFab" type="button" title="Support Premium V28">
     <span class="icon">💬</span>
     <span>Support V26</span>
   </button>
@@ -1133,10 +1133,34 @@ select:focus, input[type="number"]:focus, input[type="url"]:focus, #activationKe
 </template>
 
 <template id="tpl_dashboard">
-  <div class="row" style="justify-content:space-between">
-    <div class="note"><b>Dashboard rapide</b></div>
+  <div class="row" style="justify-content:space-between; gap:10px; flex-wrap:wrap">
+    <div class="note"><b>Dashboard licence & activité en temps réel</b></div>
     <div class="chip" id="dashLastUpdate">—</div>
   </div>
+
+  <div class="popupSectionTitle" style="margin-top:12px">Suivi global de votre licence</div>
+  <div class="grid" style="margin-top:12px">
+    <div class="kv"><span>Clé licence</span><b id="lic_key_short">—</b></div>
+    <div class="kv"><span>Plan</span><b id="lic_plan">—</b></div>
+    <div class="kv"><span>Statut</span><b id="lic_status">—</b></div>
+    <div class="kv"><span>Mode</span><b id="lic_mode">—</b></div>
+    <div class="kv"><span>Date d’activation</span><b id="lic_activated">—</b></div>
+    <div class="kv"><span>Date d’expiration</span><b id="lic_expiration">—</b></div>
+    <div class="kv"><span>Durée restante</span><b id="lic_remaining_days">—</b></div>
+    <div class="kv"><span>Dernière activité</span><b id="lic_last_seen">—</b></div>
+  </div>
+
+  <div class="popupDivider"></div>
+  <div class="popupSectionTitle">Suivi des captures / analyses</div>
+  <div class="grid" style="margin-top:12px">
+    <div class="kv"><span>Captures achetées</span><b id="lic_purchased">0</b></div>
+    <div class="kv"><span>Captures utilisées</span><b id="lic_used">0</b></div>
+    <div class="kv"><span>Captures restantes</span><b id="lic_remaining">0</b></div>
+    <div class="kv"><span>Sessions ouvertes</span><b id="lic_sessions">0</b></div>
+  </div>
+
+  <div class="popupDivider"></div>
+  <div class="popupSectionTitle">Résumé d’activité locale</div>
   <div class="grid" style="margin-top:12px">
     <div class="kv"><span>Total analyses</span><b id="d_total">0</b></div>
     <div class="kv"><span>ACHAT</span><b id="d_buy">0</b></div>
@@ -1147,7 +1171,7 @@ select:focus, input[type="number"]:focus, input[type="url"]:focus, #activationKe
     <div class="kv"><span>Confiance moyenne</span><b id="d_avg_conf">0%</b></div>
     <div class="kv"><span>Symbole fréquent</span><b id="d_symbol">—</b></div>
   </div>
-  <div class="note" style="margin-top:12px">Ce tableau est alimenté automatiquement par les analyses sauvegardées dans votre navigateur.</div>
+  <div class="note" style="margin-top:12px">La partie licence vient du serveur. La partie activité locale est alimentée automatiquement par les analyses sauvegardées dans votre navigateur.</div>
 </template>
 
 <template id="tpl_read_analysis">
@@ -1356,7 +1380,7 @@ function openModal(title, templateId){
 }
 $("btnOpenLive").addEventListener("click", ()=> openModal("LIVE + Réglage bougies", "tpl_live"));
 $("btnOpenResults").addEventListener("click", ()=> openModal("Résultats Pro", "tpl_results"));
-$("btnSupportFab")?.addEventListener("click", ()=> openModal("Support V26 Ultra Pro", "tpl_support_v26"));
+$("btnSupportFab")?.addEventListener("click", ()=> openModal("Support Premium V28", "tpl_support_v26"));
 
 /* ---------- Guide popup + WhatsApp support ---------- */
 const SUPPORT_WA = "+2250777041790";
@@ -2414,7 +2438,7 @@ function renderHistory(){
   const clr = document.getElementById('btnClearHistory');
   if(clr) clr.onclick = ()=>{ if(confirm("Supprimer tout l'historique ?")){ saveHistory([]); renderHistory(); renderDashboard(); } };
 }
-function openDashboard(){ openModal('Dashboard rapide', 'tpl_dashboard'); renderDashboard(); }
+function openDashboard(){ openModal('Dashboard Premium Temps Réel', 'tpl_dashboard'); renderDashboard(); }
 function renderDashboard(){
   const list = loadHistory();
   const total = list.length;
@@ -2428,8 +2452,55 @@ function renderDashboard(){
   const freq = {}; list.forEach(x=>{ const k=(x.symbol||'—'); freq[k]=(freq[k]||0)+1; });
   const topSymbol = Object.entries(freq).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
   const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  const fmtDate = (v)=>{
+    if(!v) return '—';
+    const d = new Date(v);
+    return isNaN(d) ? String(v) : d.toLocaleString('fr-FR');
+  };
+  const fmtDateShort = (v)=>{
+    if(!v) return '—';
+    const d = new Date(v);
+    return isNaN(d) ? String(v) : d.toLocaleDateString('fr-FR');
+  };
+  const daysRemaining = (expiration)=>{
+    if(!expiration) return '—';
+    const exp = new Date(expiration + 'T23:59:59');
+    if(isNaN(exp)) return '—';
+    const diff = Math.ceil((exp.getTime() - Date.now()) / 86400000);
+    if(diff < 0) return 'Expirée';
+    if(diff === 0) return 'Expire aujourd’hui';
+    return diff + (diff > 1 ? ' jours' : ' jour');
+  };
+  const lic = window.FXA_LICENSE || null;
+  const planLabel = lic?.plan_label || lic?.plan_id || '—';
+  const purchased = Number(lic?.analysis_limit ?? 0);
+  const used = Number(lic?.analysis_count ?? 0);
+  const remaining = lic?.mode === 'count'
+    ? Number(lic?.analyses_remaining ?? Math.max(0, purchased - used))
+    : 'Illimité';
+  const modeLabel = lic?.mode === 'count' ? 'Par captures' : (lic?.mode === 'duration' ? 'Par durée' : '—');
+  const shortKey = lic?.license_key ? String(lic.license_key).replace(/^(.{4}).+(.{4})$/, '$1••••••$2') : '—';
+
   set('d_total', total); set('d_buy', buys); set('d_sell', sells); set('d_wait', waits); set('d_avg_score', avgScore); set('d_avg_risk', avgRisk); set('d_avg_conf', avgConf + '%'); set('d_symbol', topSymbol);
-  const up = document.getElementById('dashLastUpdate'); if(up) up.textContent = total ? ('Dernière: ' + list[0].date) : 'Aucune donnée';
+  set('lic_key_short', shortKey);
+  set('lic_plan', planLabel);
+  set('lic_status', lic?.status || '—');
+  set('lic_mode', modeLabel);
+  set('lic_activated', fmtDate(lic?.activated_at));
+  set('lic_expiration', fmtDateShort(lic?.expiration));
+  set('lic_remaining_days', daysRemaining(lic?.expiration));
+  set('lic_last_seen', fmtDate(lic?.last_seen_at));
+  set('lic_purchased', purchased || (lic?.mode === 'duration' ? 'Accès durée' : 0));
+  set('lic_used', used);
+  set('lic_remaining', remaining);
+  set('lic_sessions', Number(lic?.session_count || 0));
+
+  const up = document.getElementById('dashLastUpdate');
+  if(up){
+    const localLast = total ? ('Local: ' + list[0].date) : 'Local: aucune donnée';
+    const serverLast = lic?.last_seen_at ? ('Serveur: ' + fmtDate(lic.last_seen_at)) : 'Serveur: —';
+    up.textContent = localLast + ' • ' + serverLast;
+  }
 }
 function exportCurrentAnalysis(){
   if(!LAST_RES){ alert('Aucun résultat à exporter.'); return; }
@@ -2743,11 +2814,6 @@ openModal = function(title, templateId){
 };
 function wireSupportV26(){
   refreshSupportPanel();
-  const log = document.getElementById('supportChatLog');
-  if(log && !log.dataset.booted){
-    addChatMessage(log, 'bot', 'Bienvenue dans <b>Support V26 Ultra Pro</b>.<br>Je peux faire un diagnostic du graphique, préparer un rapport d’erreur, ou lancer une urgence trader.');
-    log.dataset.booted = '1';
-  }
   document.getElementById('btnSupportWhatsApp')?.addEventListener('click', ()=>{
     const url = 'https://wa.me/2250777041790?text=' + supportMessageBase();
     window.open(url, '_blank');
@@ -2762,11 +2828,11 @@ function wireSupportV26(){
   });
   document.getElementById('btnSupportDiagnostic')?.addEventListener('click', ()=>{
     refreshSupportPanel();
-    addChatMessage(log, 'bot', buildDiagnosticText().text.replace(/\n/g,'<br>'));
   });
   document.getElementById('btnSupportReport')?.addEventListener('click', ()=>{
     exportErrorReport();
-    addChatMessage(log, 'bot', 'Rapport d’erreur généré en fichier <b>.txt</b>. Vous pouvez maintenant l’envoyer au support.');
+    const box = document.getElementById('supportDiagText');
+    if(box) box.textContent = 'Rapport d’erreur généré en fichier .txt. Vous pouvez maintenant l’envoyer au support.';
   });
   document.getElementById('btnSupportSOS')?.addEventListener('click', ()=>{
     const s = currentSupportSummary();
@@ -2778,18 +2844,8 @@ Risque=${s.risk}/100
 Confiance=${s.confidence}%
 Merci de traiter cette urgence.`);
     window.open('https://wa.me/2250777041790?text=' + urgent, '_blank');
-    addChatMessage(log, 'bot', 'Mode <b>SOS trader</b> lancé. Le canal prioritaire WhatsApp a été ouvert.');
-  });
-  document.getElementById('btnSupportSendChat')?.addEventListener('click', ()=>{
-    const input = document.getElementById('supportChatInput');
-    if(!input || !input.value.trim()) return;
-    const msg = input.value.trim();
-    addChatMessage(log, 'user', msg.replace(/</g,'&lt;'));
-    addChatMessage(log, 'bot', supportBotReply(msg));
-    input.value='';
-  });
-  document.getElementById('supportChatInput')?.addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter') document.getElementById('btnSupportSendChat')?.click();
+    const box = document.getElementById('supportDiagText');
+    if(box) box.textContent = 'Mode SOS trader lancé. Le canal prioritaire WhatsApp a été ouvert.';
   });
 }
 
@@ -2973,7 +3029,7 @@ ________________________________________
 5️⃣ Limitation de responsabilité
 En utilisant le logiciel, l’utilisateur accepte expressément que :
 •	La responsabilité totale et maximale de l’éditeur, pour quelque cause que ce soit, soit strictement limitée au montant effectivement payé pour la licence du logiciel.
-•	Aucune indemnité, réparation ou compensation ne pourra être réclamée à l’éditeur.
+•	Aucune indemnité, réparation ou compensation supérieure ne pourra être réclamée à l’éditeur.
 Cette limitation s’applique dans toute la mesure permise par la loi applicable.
 ________________________________________
 6️⃣ Acceptation
@@ -3001,7 +3057,7 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
   <div>
     <div class="row" style="justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap">
       <div>
-        <div class="supportHeadTitle">Centre Support V26 ULTRA PRO</div>
+        <div class="supportHeadTitle">Centre Support Premium V28</div>
         <div class="supportSub">Support premium type TradingView / SaaS fintech : diagnostic rapide, capture, rapport d’erreur et urgence trader.</div>
       </div>
       <div class="chip" id="supportQuickState">Décision — • Trend — • Score 0/100 • Risque 0/100</div>
@@ -3041,16 +3097,6 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
 
         <div class="supportStatus" id="supportDiagText">Aucun diagnostic généré pour le moment.</div>
       </div>
-
-      <div class="supportChatBox">
-        <div class="supportHeadTitle">Chat support intégré</div>
-        <div class="supportSub">Assistant local embarqué pour orienter le trader avant contact humain.</div>
-        <div class="chatLog" id="supportChatLog"></div>
-        <div class="chatComposer">
-          <input type="text" id="supportChatInput" placeholder="Ex. fais le diagnostic du graphique" />
-          <button class="btn ok" id="btnSupportSendChat">Envoyer</button>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -3063,11 +3109,7 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
 
   function getSession(){
     if(__fxaSession) return __fxaSession;
-    try{
-      __fxaSession = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-    }catch(e){
-      __fxaSession = null;
-    }
+    try{ __fxaSession = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }catch(e){ __fxaSession = null; }
     return __fxaSession;
   }
 
@@ -3078,55 +3120,36 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
       const res = await fetch('/api/license/report', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          token: sess.token,
-          deviceId: sess.deviceId,
-          type: eventType,
-          detail: payload || {}
-        })
+        body: JSON.stringify({ token:sess.token, deviceId:sess.deviceId, type:eventType, detail: payload || {} })
       });
-      return await res.json().catch(()=>null);
-    }catch(e){
-      return null;
-    }
+      const data = await res.json().catch(()=>null);
+      if(data && data.license){
+        window.FXA_LICENSE = data.license;
+        try{ renderDashboard(); }catch(e){}
+      }
+      return data;
+    }catch(e){ return null; }
   }
 
   async function validateSession(){
     const sess = getSession();
-
     if(!sess || !sess.token || !sess.deviceId){
       alert('Session introuvable. Veuillez réactiver votre licence.');
       location.href = '/index.html';
       return;
     }
-
     try{
       const res = await fetch('/api/license/validate', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          token: sess.token,
-          deviceId: sess.deviceId
-        })
+        body: JSON.stringify({ token:sess.token, deviceId:sess.deviceId })
       });
-
-      const data = await res.json().catch(()=>({
-        ok:false,
-        error:'Réponse serveur invalide.'
-      }));
-
-      const accepted =
-        res.ok &&
-        (
-          data.ok === true ||
-          !!data.license
-        );
-
-      if(!accepted){
+      const data = await res.json().catch(()=>({ ok:false, error:'Réponse serveur invalide.' }));
+      if(!res.ok || !data.ok){
         throw new Error(data.error || 'Session invalide.');
       }
-
       window.FXA_LICENSE = data.license || null;
+      try{ renderDashboard(); }catch(e){}
     }catch(err){
       alert(err.message || 'Session invalide. Veuillez réactiver votre licence.');
       localStorage.removeItem(SESSION_KEY);
@@ -3135,18 +3158,18 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
   }
 
   document.addEventListener('DOMContentLoaded', validateSession);
+  setInterval(()=>{ try{ validateSession(); }catch(e){} }, 30000);
 
   document.addEventListener('click', function(e){
     const el = e.target.closest('button,[id]');
     if(!el) return;
     const id = el.id || '';
-
     if(id === 'btnAnalyze'){
-      postLicenseEvent('analysis_run', { source:'ui', ts:new Date().toISOString() });
+      postLicenseEvent('analysis_run', { source:'ui', ts: new Date().toISOString() });
     }else if(id === 'btnSupportReport'){
-      postLicenseEvent('error_report', { source:'support', ts:new Date().toISOString() });
+      postLicenseEvent('error_report', { source:'support', ts: new Date().toISOString() });
     }else if(id === 'btnSupportSOS'){
-      postLicenseEvent('sos_report', { source:'support', ts:new Date().toISOString() });
+      postLicenseEvent('sos_report', { source:'support', ts: new Date().toISOString() });
     }
   }, true);
 })();
