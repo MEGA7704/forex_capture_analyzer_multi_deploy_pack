@@ -3113,6 +3113,14 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
     return __fxaSession;
   }
 
+  function forceCloseApp(message){
+    const msg = message || 'Votre licence a expiré ou votre quota de captures est épuisé. L'application va se fermer.';
+    try{ alert(msg); }catch(e){}
+    try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+    try{ document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#071c21;color:#fff;font-family:Inter,Arial,sans-serif;padding:24px"><div style="max-width:560px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:26px;box-shadow:0 18px 50px rgba(0,0,0,.35)"><div style="font-size:24px;font-weight:800;color:#ffd400;margin-bottom:10px;text-align:center">Accès fermé</div><div style="height:1px;background:rgba(255,255,255,.12);margin:12px 0 16px"></div><div style="font-size:15px;line-height:1.6;text-align:center">' + String(msg).replace(/</g,'&lt;') + '</div><div style="margin-top:18px;text-align:center"><a href="/index.html" style="display:inline-block;padding:12px 18px;border-radius:12px;background:#ffd400;color:#071c21;font-weight:800;text-decoration:none">Retour à l'activation</a></div></div></div>'; }catch(e){}
+    setTimeout(()=>{ try{ location.href = '/index.html'; }catch(e){} }, 1600);
+  }
+
   async function postLicenseEvent(eventType, payload){
     const sess = getSession();
     if(!sess || !sess.token || !sess.deviceId) return null;
@@ -3126,6 +3134,12 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
       if(data && data.license){
         window.FXA_LICENSE = data.license;
         try{ renderDashboard(); }catch(e){}
+      }
+      if(!res.ok){
+        const msg = (data && (data.error || data.message)) || 'Accès fermé : durée ou quota atteint.';
+        if(/quota|expir|crédits|captures/i.test(msg)){
+          forceCloseApp(msg);
+        }
       }
       return data;
     }catch(e){ return null; }
@@ -3146,7 +3160,12 @@ L’utilisateur reconnaît avoir pris connaissance des risques inhérents au tra
       });
       const data = await res.json().catch(()=>({ ok:false, error:'Réponse serveur invalide.' }));
       if(!res.ok || !data.ok){
-        throw new Error(data.error || 'Session invalide.');
+        const reason = data?.error || 'Session invalide.';
+        if(/quota|expir|crédits|captures/i.test(reason)){
+          forceCloseApp(reason);
+          return;
+        }
+        throw new Error(reason);
       }
       window.FXA_LICENSE = data.license || null;
       try{ renderDashboard(); }catch(e){}

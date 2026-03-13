@@ -26,6 +26,24 @@ app.use((req, res, next) => {
 function normalizeKey(key=''){ return String(key).trim().toUpperCase(); }
 function nowIso(){ return new Date().toISOString(); }
 function isExpired(license){ if (!license || !license.expiration) return false; const exp = new Date(license.expiration + 'T23:59:59Z').getTime(); return Date.now() > exp; }
+function isCountExhausted(license){
+  if (!license || license.mode !== 'count') return false;
+  const remaining = Number(license.analyses_remaining ?? license.analysis_limit ?? 0);
+  return remaining <= 0;
+}
+function getLicenseAccessError(license){
+  if (!license) return 'Licence introuvable';
+  if (license.status === 'blocked') return 'Licence bloquée';
+  if (isExpired(license)) return 'Licence expirée';
+  if (isCountExhausted(license)) return 'Quota de captures atteint';
+  return '';
+}
+function refreshComputedStatus(license){
+  if (!license) return license;
+  if (isExpired(license)) license.status = 'expired';
+  else if (isCountExhausted(license)) license.status = 'quota_reached';
+  return license;
+}
 function safeIpHash(ip=''){ return !ip ? '' : 'ip_' + String(ip).split('.').slice(0,2).join('_'); }
 function sanitizeLicenseForClient(license){ const clone = { ...license }; delete clone.notes; delete clone.last_ip_hash; delete clone.client_meta; return clone; }
 
@@ -75,8 +93,9 @@ app.post('/api/license/portal', async (req, res) => {
 
     let license = await getLicense(key);
     if (!license) return res.status(404).json({ ok:false, error:'Licence introuvable' });
-    if (license.status === 'blocked') return res.status(403).json({ ok:false, error:'Licence bloquée' });
-    if (isExpired(license)) return res.status(403).json({ ok:false, error:'Licence expirée' });
+    refreshComputedStatus(license);
+    const accessError = getLicenseAccessError(license);
+    if (accessError) { await putLicense(license); return res.status(403).json({ ok:false, error: accessError }); }
     if (license.device_locked && license.device_id && license.device_id !== deviceId) return res.status(403).json({ ok:false, error:'Licence déjà liée à un autre appareil' });
 
     const firstActivation = !license.activated_at;
@@ -106,8 +125,9 @@ app.post('/api/license/validate', async (req, res) => {
     const payload = verifyToken(token, LICENSE_SECRET);
     const license = await getLicense(payload.sub);
     if (!license) return res.status(404).json({ ok:false, error:'Licence introuvable' });
-    if (license.status === 'blocked') return res.status(403).json({ ok:false, error:'Licence bloquée' });
-    if (isExpired(license)) return res.status(403).json({ ok:false, error:'Licence expirée' });
+    refreshComputedStatus(license);
+    const accessError = getLicenseAccessError(license);
+    if (accessError) { await putLicense(license); return res.status(403).json({ ok:false, error: accessError }); }
     if (payload.device_id !== claimedDevice || license.device_id !== claimedDevice) return res.status(403).json({ ok:false, error:'Appareil non autorisé' });
     license.last_seen_at = nowIso();
     await putLicense(license);
@@ -124,12 +144,20 @@ app.post('/api/license/report', async (req, res) => {
     const payload = verifyToken(token, LICENSE_SECRET);
     const license = await getLicense(payload.sub);
     if (!license) return res.status(404).json({ ok:false, error:'Licence introuvable' });
+    refreshComputedStatus(license);
+    const accessError = getLicenseAccessError(license);
+    if (accessError) { await putLicense(license); return res.status(403).json({ ok:false, error: accessError }); }
     if (license.device_id !== deviceId) return res.status(403).json({ ok:false, error:'Appareil non autorisé' });
     if (type === 'analysis_run') {
       const remaining = Number(license.analyses_remaining ?? license.analysis_limit ?? 0);
-      if (license.mode === 'count' && remaining <= 0) return res.status(403).json({ ok:false, error:'Crédits épuisés' });
-      if (license.mode === 'count') license.analyses_remaining = remaining - 1;
+      if (license.mode === 'count' && remaining <= 0) {
+        refreshComputedStatus(license);
+        await putLicense(license);
+        return res.status(403).json({ ok:false, error:'Quota de captures atteint' });
+      }
+      if (license.mode === 'count') license.analyses_remaining = Math.max(0, remaining - 1);
       license.analysis_count = Number(license.analysis_count || 0) + 1;
+      refreshComputedStatus(license);
     }
     if (type === 'error_report') license.error_reports = Number(license.error_reports || 0) + 1;
     if (type === 'sos_report') license.sos_reports = Number(license.sos_reports || 0) + 1;
@@ -162,9 +190,10 @@ app.get('/api/license/stats', async (req, res) => {
     const events = await readEvents();
     const totals = {
       licenses: licenses.length,
-      activated: licenses.filter(x => x.status === 'active').length,
-      blocked: licenses.filter(x => x.status === 'blocked').length,
+      activated: licenses.filter(x => { refreshComputedStatus(x); return x.status === 'active'; }).length,
+      blocked: licenses.filter(x => { refreshComputedStatus(x); return x.status === 'blocked'; }).length,
       expired: licenses.filter(x => isExpired(x)).length,
+      quotaReached: licenses.filter(x => isCountExhausted(x)).length,
       totalRemaining: licenses.reduce((s,x)=> s + Number(x.analyses_remaining || 0), 0)
     };
     const byPlan = licenses.reduce((acc, x) => { const k = x.plan_id || 'UNKNOWN'; acc[k] = (acc[k] || 0) + 1; return acc; }, {});
