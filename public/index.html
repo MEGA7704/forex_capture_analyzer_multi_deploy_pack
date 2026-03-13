@@ -29,50 +29,7 @@ body{
   box-shadow:0 24px 80px rgba(0,0,0,.38);
   overflow:hidden;
 }
-.hero{padding:28px 28px 12px;background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0));}
-.logo{width:62px;height:62px;border-radius:20px;border:1px solid rgba(255,255,255,.16);background:linear-gradient(135deg, rgba(22,217,199,.28), rgba(255,212,0,.16), rgba(136,167,255,.20));box-shadow:0 10px 30px rgba(0,0,0,.28),0 0 24px rgba(22,217,199,.10);margin-bottom:16px}
-h1{margin:0;font-size:28px;line-height:1.1}
-p{margin:10px 0 0;color:var(--muted);line-height:1.55;font-size:14px}
-.form{padding:20px 28px 28px}
-label{display:block;margin-bottom:10px;font-size:13px;font-weight:800;color:#fff}
-input{width:100%;padding:16px 18px;border-radius:16px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;font-size:16px;font-weight:800;letter-spacing:.4px;outline:none}
-input:focus{border-color:rgba(22,217,199,.40);box-shadow:0 0 0 4px rgba(22,217,199,.10)}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
-button,a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:14px 16px;border-radius:16px;border:1px solid rgba(255,255,255,.14);font-weight:900;font-size:14px;cursor:pointer;transition:all .22s ease;color:#fff}
-button:hover,a.btn:hover{transform:translateY(-1px);box-shadow:0 12px 24px rgba(0,0,0,.24)}
-.primary{background:linear-gradient(180deg, rgba(22,217,199,.28), rgba(22,217,199,.08));border-color:rgba(22,217,199,.35)}
-.warn{background:linear-gradient(180deg, rgba(255,212,0,.24), rgba(255,212,0,.08));border-color:rgba(255,212,0,.35)}
-.msg{margin-top:16px;padding:13px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.18);font-size:13px;line-height:1.5;color:var(--muted);min-height:48px}
-.foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:rgba(255,255,255,.62)}
-.badge{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);font-size:11px;font-weight:900}
-.small{font-size:12px;color:rgba(255,255,255,.62);margin-top:14px;line-height:1.5}
-@media(max-width:560px){.actions{grid-template-columns:1fr} .hero,.form{padding-left:18px;padding-right:18px;} h1{font-size:24px}}
-</style>
- </head> 
- <body> 
-    <div class="panel"> 
-    <div class="hero"> 
-    <h1>Connexion simple</h1> 
-    <div class="separator"></div>
-    <h1>Forex Capture Analyzer PRO </h1> 
-</div>
-</div>
-    <div class="form">
-      <label for="licenseKey">Entrez votre clé</label>
-      <input id="licenseKey" type="text" placeholder="Ex. FXA-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false" />
-      <div class="actions">
-        <button id="btnActivate" class="primary">Activer</button>
-        <a class="btn warn" href="https://forexanalyzer.e-monsite.com/pages/tarifs.html" target="_self">Acheter ma licence</a>
-      </div>
-      <div class="msg" id="msg">Saisissez votre clé de licence, puis cliquez sur <b>Activer</b>.</div>
-      <div class="foot">
-        <span class="badge">V27 PRO </span>
-        <span class="badge" id="deviceBadge">Appareil: calcul…</span>
-      </div>
-      <div class="small">Astuce : après activation, l’ouverture se fera automatiquement vers l’application.</div>
-    </div>
-  </div>
-
+.hero{padding:28px 28px 12px;background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0));} .logo{width:62px;height:62px;border-radius:20px;border:1px solid rgba(255,255,255,.16);background:linear-gradient(135deg, rgba(22,217,199,.28), rgba(255,212,0,.16), rgba(136,167,255,.20));box-shadow:0 10px 30px rgba(0,0,0,.28),0 0 24px rgba(22,217,199,.10);margin-bottom:16px} h1{margin:0;font-size:28px;line-height:1.1} p{margin:10px 0 0;color:var(--muted);line-height:1.55;font-size:14px} .form{padding:20px 28px 28px} label{display:block;margin-bottom:10px;font-size:13px;font-weight:800;color:#fff} input{width:100%;padding:16px 18px;border-radius:16px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;font-size:16px;font-weight:800;letter-spacing:.4px;outline:none} input:focus{border-color:rgba(22,217,199,.40);box-shadow:0 0 0 4px rgba(22,217,199,.10)} .actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px} button,a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:14px 16px;border-radius:16px;border:1px solid rgba(255,255,255,.14);font-weight:900;font-size:14px;cursor:pointer;transition:all .22s ease;color:#fff} button:hover,a.btn:hover{transform:translateY(-1px);box-shadow:0 12px 24px rgba(0,0,0,.24)} .primary{background:linear-gradient(180deg, rgba(22,217,199,.28), rgba(22,217,199,.08));border-color:rgba(22,217,199,.35)} .warn{background:linear-gradient(180deg, rgba(255,212,0,.24), rgba(255,212,0,.08));border-color:rgba(255,212,0,.35)} .msg{margin-top:16px;padding:13px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.18);font-size:13px;line-height:1.5;color:var(--muted);min-height:48px} .foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:rgba(255,255,255,.62)} .badge{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);font-size:11px;font-weight:900} .small{font-size:12px;color:rgba(255,255,255,.62);margin-top:14px;line-height:1.5} @media(max-width:560px){.actions{grid-template-columns:1fr} .hero,.form{padding-left:18px;padding-right:18px;} h1{font-size:24px}} </style> </head> <body> <div class="panel"> <div class="hero"> <div class="logo"></div> <h1>Connexion simple</h1> <p>Entrez votre clé pour activer <b>Forex Capture Analyzer PRO V27 ULTRA SaaS</b>. La même zone accepte aussi la <b>clé admin spéciale</b> pour ouvrir directement le dashboard admin.</p> </div> <div class="form"> <label for="licenseKey">Entrez votre clé</label> <input id="licenseKey" type="text" placeholder="Ex. FXA-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false" /> <div class="actions"> <button id="btnActivate" class="primary">Activer</button> <a class="btn warn" href="https://forexanalyzer.e-monsite.com/pages/tarifs.html" target="_self">Acheter ma licence</a> </div> <div class="msg" id="msg">Saisissez votre clé de licence ou votre clé admin spéciale, puis cliquez sur <b>Activer</b>.</div> <div class="foot"> <span class="badge">V27 ULTRA PRO SaaS</span> <span class="badge" id="deviceBadge">Appareil: calcul…</span> </div> <div class="small">Astuce : après activation, l’ouverture se fera automatiquement vers l’application ou vers <b>admin.html</b> selon le type de clé saisie.</div> </div> </div> <script>
 <script>
 const SESSION_KEY = 'FXA_V27_SESSION';
 const ADMIN_TOKEN_KEY = 'FXA_ADMIN_TOKEN_V27';
