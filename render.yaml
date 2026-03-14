@@ -15,3 +15,13 @@ services:
         generateValue: true
       - key: ADMIN_MASTER_KEY
         sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GITHUB_REPO
+        sync: false
+      - key: GITHUB_BRANCH
+        value: main
+      - key: GITHUB_LICENSES_PATH
+        value: render_data/licenses.json
+      - key: GITHUB_EVENTS_PATH
+        value: render_data/events.json

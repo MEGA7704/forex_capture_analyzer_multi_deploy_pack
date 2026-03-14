@@ -1,69 +1,42 @@
-Forex Capture Analyzer Premium — Vrai système temps réel V28
+# Déploiement Render Free + persistance GitHub
 
-# Forex Capture Analyzer PRO — Pack Render prêt à déployer
+Cette version ne dépend plus d'un Persistent Disk Render.
 
-Ce pack répond exactement à ces attentes :
+## Ce que fait cette version
 
-1. Mettre en ligne une app qui accompagne les traders.
-2. Protéger l'accès par clé licence avec une page de connexion client.
-3. Permettre, dans la même page de connexion, l'entrée d'une clé spéciale admin pour ouvrir la gestion des licences.
+- Les licences `mode = duration` sont bloquées selon la date du serveur.
+- Les licences `mode = count` sont bloquées selon `analysis_count >= analysis_limit`.
+- Les champs `status` et `analyses_remaining` sont recalculés automatiquement au démarrage et pendant l'utilisation.
+- Les données licences et événements peuvent être sauvegardées dans GitHub pour survivre aux redémarrages Render Free.
 
-## Structure
-- `public/index.html` : page de connexion client et admin
-- `public/app.html` : application trader
-- `public/admin.html` : dashboard admin pour gérer les licences
-- `server.js` : API Render Node/Express
-- `data/licenses.seed.json` : 1000 clés prédéfinies non utilisées
-- `data/events.seed.json` : journal des événements initial
+## Variables Render à configurer
 
-## Déploiement Render
-### Option la plus simple
-1. Crée un nouveau dépôt GitHub.
-2. Envoie tout le contenu de ce dossier à la racine du dépôt.
-3. Sur Render, clique sur **New +** puis **Web Service**.
-4. Connecte le dépôt GitHub.
-5. Vérifie ces réglages :
-   - Runtime : `Node`
-   - Build Command : `npm install`
-   - Start Command : `npm start`
-6. Ajoute les variables d'environnement :
-   - `LICENSE_SECRET`
-   - `ADMIN_TOKEN`
-   - `ADMIN_MASTER_KEY`
-7. Lance le déploiement.
+- `LICENSE_SECRET`
+- `ADMIN_TOKEN`
+- `ADMIN_MASTER_KEY`
+- `GITHUB_TOKEN`
+- `GITHUB_REPO`
+- `GITHUB_BRANCH`
+- `GITHUB_LICENSES_PATH`
+- `GITHUB_EVENTS_PATH`
 
-## Clé admin
-La même page `index.html` accepte :
-- une clé licence client pour ouvrir `app.html`
-- la valeur `ADMIN_MASTER_KEY` pour ouvrir `admin.html`
+## Configuration GitHub
+
+1. Crée un Personal Access Token GitHub avec accès **Contents: Read and Write**.
+2. Dans Render > Environment, ajoute :
+   - `GITHUB_TOKEN=...`
+   - `GITHUB_REPO=nom-utilisateur/nom-du-repo`
+   - `GITHUB_BRANCH=main`
+   - `GITHUB_LICENSES_PATH=render_data/licenses.json`
+   - `GITHUB_EVENTS_PATH=render_data/events.json`
+3. Redéploie le service.
+
+## Comportement
+
+- Au démarrage, le serveur tente de relire les données depuis GitHub.
+- Si les fichiers GitHub n'existent pas encore, ils sont créés automatiquement.
+- À chaque modification critique, les fichiers sont réécrits dans GitHub.
 
 ## Important
-- Les 1000 licences sont préchargées au premier démarrage à partir de `data/licenses.seed.json`.
-- Sans disque persistant Render, les modifications de licences peuvent être perdues lors d'un redéploiement majeur.
-- Pour garder l'état des licences, attache un disque persistant Render puis définis `DATA_DIR` ou laisse `RENDER_DISK_PATH` être détecté automatiquement.
 
-## Vérification
-Après déploiement :
-- `/` ouvre la page de connexion
-- `/health` doit répondre avec `ok: true`
-- la clé admin ouvre `admin.html`
-
-
-Mise à jour V28 :
-- Dashboard client avec suivi licence en temps réel par rafraîchissement automatique.
-- Dashboard admin avec actualisation automatique des statistiques et de la liste des licences.
-- Popup support épuré.
-
-
-## Important — mémoire des licences sur Render
-
-Pour que les licences expirées restent bloquées même après redémarrage, le service doit utiliser un disque persistant Render.
-
-- Attacher un **Persistent Disk** au service.
-- Vérifier que `RENDER_DISK_PATH` est disponible côté serveur.
-- Le projet enregistre alors `licenses.json` et `events.json` dans ce disque.
-- Au démarrage, le serveur **recalcule automatiquement** les statuts :
-  - `expired` selon la date du serveur
-  - `quota_reached` selon `analysis_count` par rapport à `analysis_limit`
-
-Ainsi, une licence expirée ou un quota épuisé reste bloqué après redémarrage.
+Sans `GITHUB_TOKEN` et `GITHUB_REPO`, le projet fonctionne toujours, mais la persistance restera locale et peut être perdue sur Render Free.
