@@ -59,5 +59,16 @@
         "platform": "Win32"
       }
     }
+  },
+  {
+    "id": "evt_1773518311585_utkro7",
+    "created_at": "2026-03-14T19:58:31.585Z",
+    "event_type": "analysis_run",
+    "license_key": "FXA-NKN9-X9T5-YYVV-RVKE",
+    "device_id": "PC-DC7781F2579F",
+    "details": {
+      "source": "ui",
+      "ts": "2026-03-14T19:58:21.459Z"
+    }
   }
 ]
