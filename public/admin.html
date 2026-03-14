@@ -81,6 +81,7 @@ tbody tr:hover{background:rgba(255,255,255,.04)}
         <option value="blocked">blocked</option>
         <option value="pirated_blocked">pirated_blocked</option>
         <option value="expired">expired</option>
+        <option value="quota_reached">quota_reached</option>
       </select>
       <select id="planFilter">
         <option value="">Tous plans</option>
@@ -118,6 +119,67 @@ tbody tr:hover{background:rgba(255,255,255,.04)}
       <input id="actionDays" type="number" placeholder="jours (extend)" value="30" style="width:130px"/>
       <input id="actionReason" placeholder="Motif admin" style="min-width:260px"/>
       <button id="btnRunAction" class="warn">Exécuter</button>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="row" style="justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-weight:800;font-size:18px">Générateur massif de licences</div>
+          <div class="small" style="margin-top:6px">Créer jusqu'à 1000 licences en un clic et les enregistrer automatiquement dans GitHub / Render.</div>
+        </div>
+        <div class="row" style="gap:8px">
+          <button class="primary" id="btnPresetCapture5">Créer 1000 licences CAPTURE_5</button>
+          <button class="primary" id="btnPresetCapture25">Créer 1000 licences CAPTURE_25</button>
+          <button class="primary" id="btnPresetCapture100">Créer 1000 licences CAPTURE_100</button>
+          <button class="warn" id="btnPresetDuration30">Créer 1000 licences DURATION_30</button>
+          <button class="warn" id="btnPresetDuration365">Créer 1000 licences DURATION_365</button>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:repeat(4,minmax(180px,1fr));margin-top:14px">
+        <div>
+          <div class="small">Nombre</div>
+          <input id="bulkCount" type="number" value="1000" min="1" max="1000" style="width:100%"/>
+        </div>
+        <div>
+          <div class="small">Mode</div>
+          <select id="bulkMode" style="width:100%">
+            <option value="count">count</option>
+            <option value="duration">duration</option>
+          </select>
+        </div>
+        <div>
+          <div class="small">Plan ID</div>
+          <input id="bulkPlanId" value="CAPTURE_5" style="width:100%"/>
+        </div>
+        <div>
+          <div class="small">Libellé</div>
+          <input id="bulkPlanLabel" value="5 Captures" style="width:100%"/>
+        </div>
+        <div>
+          <div class="small">Prix USDT</div>
+          <input id="bulkPrice" type="number" value="2" style="width:100%"/>
+        </div>
+        <div>
+          <div class="small">Limite captures</div>
+          <input id="bulkAnalysisLimit" type="number" value="5" style="width:100%"/>
+        </div>
+        <div>
+          <div class="small">Durée (jours)</div>
+          <input id="bulkDurationDays" type="number" value="365" style="width:100%"/>
+        </div>
+        <div>
+          <div class="small">Note</div>
+          <input id="bulkNotes" placeholder="Lot généré admin" style="width:100%"/>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:14px">
+        <button id="btnGenerateBulk" class="primary">Créer le lot personnalisé</button>
+        <button id="btnDownloadGenerated" class="warn">Télécharger le dernier lot JSON</button>
+      </div>
+
+      <div id="bulkResult" class="log" style="margin-top:12px">Aucun lot généré pour le moment.</div>
     </div>
 
     <div class="row" style="margin-top:16px; align-items:flex-start">
@@ -226,6 +288,76 @@ $('btnRefresh').onclick = async () => {
     alert(err.message);
   }
 };
+
+
+let lastGeneratedLicenses = [];
+
+function setBulkPreset(preset){
+  $('bulkCount').value = preset.count || 1000;
+  $('bulkMode').value = preset.mode;
+  $('bulkPlanId').value = preset.plan_id;
+  $('bulkPlanLabel').value = preset.plan_label;
+  $('bulkPrice').value = preset.price_usdt;
+  $('bulkAnalysisLimit').value = preset.analysis_limit;
+  $('bulkDurationDays').value = preset.duration_days;
+  $('bulkNotes').value = preset.notes || '';
+}
+
+async function generateBulkLicenses(preset = null){
+  try{
+    if (preset) setBulkPreset(preset);
+    const payload = {
+      count: Number($('bulkCount').value || 1000),
+      mode: $('bulkMode').value,
+      plan_id: $('bulkPlanId').value.trim(),
+      plan_label: $('bulkPlanLabel').value.trim(),
+      price_usdt: Number($('bulkPrice').value || 0),
+      analysis_limit: Number($('bulkAnalysisLimit').value || 0),
+      duration_days: Number($('bulkDurationDays').value || 365),
+      notes: $('bulkNotes').value.trim()
+    };
+    $('bulkResult').textContent = 'Génération en cours...';
+    const data = await fetchJson('/api/admin/licenses/generate-bulk', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', ...adminHeaders() },
+      body: JSON.stringify(payload)
+    });
+    lastGeneratedLicenses = data.licenses || [];
+    $('bulkResult').textContent =
+      `Succès : ${data.created_count} licences créées pour ${data.plan.plan_id}
+
+` +
+      JSON.stringify(data.sample || [], null, 2);
+    await Promise.all([loadStats(), loadList()]);
+  }catch(err){
+    $('bulkResult').textContent = err.message;
+    alert(err.message);
+  }
+}
+
+function downloadLastGenerated(){
+  if(!lastGeneratedLicenses.length){
+    alert('Aucun lot disponible.');
+    return;
+  }
+  const blob = new Blob([JSON.stringify(lastGeneratedLicenses, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'generated_licenses_' + new Date().toISOString().slice(0,19).replace(/[:T]/g,'-') + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+$('btnGenerateBulk').onclick = () => generateBulkLicenses();
+$('btnDownloadGenerated').onclick = downloadLastGenerated;
+$('btnPresetCapture5').onclick = () => generateBulkLicenses({ count:1000, mode:'count', plan_id:'CAPTURE_5', plan_label:'5 Captures', price_usdt:2, analysis_limit:5, duration_days:365, notes:'Lot admin CAPTURE_5' });
+$('btnPresetCapture25').onclick = () => generateBulkLicenses({ count:1000, mode:'count', plan_id:'CAPTURE_25', plan_label:'25 Captures', price_usdt:8, analysis_limit:25, duration_days:365, notes:'Lot admin CAPTURE_25' });
+$('btnPresetCapture100').onclick = () => generateBulkLicenses({ count:1000, mode:'count', plan_id:'CAPTURE_100', plan_label:'100 Captures', price_usdt:25, analysis_limit:100, duration_days:365, notes:'Lot admin CAPTURE_100' });
+$('btnPresetDuration30').onclick = () => generateBulkLicenses({ count:1000, mode:'duration', plan_id:'DURATION_30', plan_label:'30 Jours', price_usdt:60, analysis_limit:0, duration_days:30, notes:'Lot admin DURATION_30' });
+$('btnPresetDuration365').onclick = () => generateBulkLicenses({ count:1000, mode:'duration', plan_id:'DURATION_365', plan_label:'365 Jours', price_usdt:675, analysis_limit:0, duration_days:365, notes:'Lot admin DURATION_365' });
 
 (async function init(){
   try{

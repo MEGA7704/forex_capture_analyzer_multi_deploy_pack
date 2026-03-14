@@ -107,6 +107,66 @@ function sanitizeLicenseForClient(license) {
   return clone;
 }
 function deepEqual(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+
+function randomLicenseBlock(size = 4) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out = '';
+  for (let i = 0; i < size; i += 1) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+}
+function generateLicenseKey(prefix = 'FXA') {
+  return `${prefix}-${randomLicenseBlock(4)}-${randomLicenseBlock(4)}-${randomLicenseBlock(4)}-${randomLicenseBlock(4)}`;
+}
+function daysFromNowUtc(days) {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() + Math.max(0, Number(days || 0)));
+  return d.toISOString().slice(0, 10);
+}
+function buildLicenseFromPlan(plan = {}) {
+  const mode = String(plan.mode || 'count') === 'duration' ? 'duration' : 'count';
+  const analysisLimit = Math.max(0, Math.trunc(toFiniteNumber(plan.analysis_limit, 0)));
+  const durationDays = Math.max(1, Math.trunc(toFiniteNumber(plan.duration_days, 365)));
+  const issuedAt = nowIso().slice(0, 10);
+  const expiration = daysFromNowUtc(durationDays);
+  return refreshComputedStatus({
+    license_key: generateLicenseKey('FXA'),
+    plan_id: String(plan.plan_id || (mode === 'count' ? `CAPTURE_${analysisLimit || 5}` : `ACCESS_${durationDays}_DAYS`)).trim(),
+    plan_label: String(plan.plan_label || (mode === 'count' ? `${analysisLimit || 5} Captures` : `${durationDays} Jours`)).trim(),
+    price_usdt: toFiniteNumber(plan.price_usdt, 0),
+    mode,
+    analysis_limit: mode === 'count' ? analysisLimit : 0,
+    analyses_remaining: mode === 'count' ? analysisLimit : null,
+    duration_days: durationDays,
+    issued_at: issuedAt,
+    expiration,
+    status: 'unused',
+    device_id: null,
+    device_locked: false,
+    activated_at: null,
+    last_seen_at: null,
+    last_ip_hash: null,
+    session_count: 0,
+    analysis_count: 0,
+    error_reports: 0,
+    sos_reports: 0,
+    piracy_flags: 0,
+    notes: String(plan.notes || '').trim()
+  });
+}
+function generateBulkLicenses(existing, count, plan) {
+  const seen = new Set((existing || []).map((item) => normalizeKey(item.license_key)).filter(Boolean));
+  const out = [];
+  const safeCount = Math.min(1000, Math.max(1, Math.trunc(toFiniteNumber(count, 1))));
+  while (out.length < safeCount) {
+    const license = buildLicenseFromPlan(plan);
+    const key = normalizeKey(license.license_key);
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push(license);
+    }
+  }
+  return out;
+}
 function unwrapLicensesPayload(raw) {
   const items = Array.isArray(raw) ? raw : (Array.isArray(raw?.licenses) ? raw.licenses : []);
   return items.map((item) => refreshComputedStatus(item));
@@ -476,7 +536,7 @@ app.post('/api/license/block', async (req, res) => {
       license.last_ip_hash = null;
       license.session_count = 0;
       restoreLicenseStatus(license);
-    } else if (action === 'extend_days') {
+    } else if (action === 'extend_days' || action === 'extend') {
       const anchor = (license.mode === 'duration' && isExpired(license))
         ? new Date(`${dateOnlyUtc(nowIso())}T00:00:00Z`)
         : (license.expiration ? new Date(`${dateOnlyUtc(license.expiration)}T00:00:00Z`) : new Date());
@@ -495,6 +555,45 @@ app.post('/api/license/block', async (req, res) => {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.post('/api/admin/licenses/generate-bulk', async (req, res) => {
+  try {
+    requireAdmin(req);
+    const count = Math.min(1000, Math.max(1, Math.trunc(toFiniteNumber(req.body?.count, 1))));
+    const mode = String(req.body?.mode || 'count').trim() === 'duration' ? 'duration' : 'count';
+    const plan = {
+      mode,
+      plan_id: String(req.body?.plan_id || (mode === 'count' ? 'CAPTURE_5' : 'ACCESS_30_DAYS')).trim(),
+      plan_label: String(req.body?.plan_label || (mode === 'count' ? '5 Captures' : '30 Jours')).trim(),
+      price_usdt: toFiniteNumber(req.body?.price_usdt, 0),
+      analysis_limit: Math.max(0, Math.trunc(toFiniteNumber(req.body?.analysis_limit, 0))),
+      duration_days: Math.max(1, Math.trunc(toFiniteNumber(req.body?.duration_days, 365))),
+      notes: String(req.body?.notes || '').trim()
+    };
+
+    const current = await listLicenses();
+    const generated = generateBulkLicenses(current, count, plan);
+    await writeLicenses([...current, ...generated], `Bulk create ${generated.length} licenses for ${plan.plan_id}`);
+    await appendEvent({
+      created_at: nowIso(),
+      event_type: 'admin_bulk_generate',
+      license_key: plan.plan_id,
+      device_id: '',
+      details: { count: generated.length, plan }
+    });
+
+    res.json({
+      ok: true,
+      created_count: generated.length,
+      plan,
+      sample: generated.slice(0, 20).map(sanitizeLicenseForClient),
+      licenses: generated.map(sanitizeLicenseForClient)
+    });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.listen(PORT, async () => {
   try {
