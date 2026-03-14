@@ -12,5 +12,19 @@
         "platform": "Win32"
       }
     }
+  },
+  {
+    "id": "evt_1773519323627_miulbk",
+    "created_at": "2026-03-14T20:15:23.625Z",
+    "event_type": "license_login",
+    "license_key": "FXA-NKN9-X9T5-YYVV-RVKE",
+    "device_id": "PC-DC7781F2579F",
+    "details": {
+      "clientMeta": {
+        "ua": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
+        "lang": "fr",
+        "platform": "Win32"
+      }
+    }
   }
 ]
