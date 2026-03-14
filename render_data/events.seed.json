@@ -95,5 +95,16 @@
         "platform": "Win32"
       }
     }
+  },
+  {
+    "id": "evt_1773519520645_287nfl",
+    "created_at": "2026-03-14T20:18:40.644Z",
+    "event_type": "analysis_run",
+    "license_key": "FXA-4B3Z-SJCJ-3MG6-MTF2",
+    "device_id": "PC-DC7781F2579F",
+    "details": {
+      "source": "ui",
+      "ts": "2026-03-14T20:18:31.247Z"
+    }
   }
 ]
