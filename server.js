@@ -25,24 +25,60 @@ app.use((req, res, next) => {
 
 function normalizeKey(key=''){ return String(key).trim().toUpperCase(); }
 function nowIso(){ return new Date().toISOString(); }
-function isExpired(license){ if (!license || !license.expiration) return false; const exp = new Date(license.expiration + 'T23:59:59Z').getTime(); return Date.now() > exp; }
+function toFiniteNumber(value, fallback = 0){ const n = Number(value); return Number.isFinite(n) ? n : fallback; }
+function isExpired(license){ if (!license || !license.expiration) return false; const exp = new Date(String(license.expiration).slice(0,10) + 'T23:59:59Z').getTime(); return Number.isFinite(exp) ? Date.now() > exp : false; }
 function isCountExhausted(license){
   if (!license || license.mode !== 'count') return false;
-  const remaining = Number(license.analyses_remaining ?? license.analysis_limit ?? 0);
+  const remaining = toFiniteNumber(license.analyses_remaining ?? license.analysis_limit, 0);
   return remaining <= 0;
 }
-function getLicenseAccessError(license){
-  if (!license) return 'Licence introuvable';
-  if (license.status === 'blocked') return 'Licence bloquée';
-  if (isExpired(license)) return 'Licence expirée';
-  if (isCountExhausted(license)) return 'Quota de captures atteint';
-  return '';
+function normalizeLicenseShape(license){
+  if (!license) return null;
+  license.license_key = normalizeKey(license.license_key || '');
+  license.plan_id = String(license.plan_id || '').trim();
+  license.plan_label = String(license.plan_label || license.plan_id || '').trim();
+  license.mode = license.mode === 'count' ? 'count' : 'duration';
+  license.analysis_limit = Math.max(0, Math.trunc(toFiniteNumber(license.analysis_limit, 0)));
+  license.analysis_count = Math.max(0, Math.trunc(toFiniteNumber(license.analysis_count, 0)));
+  license.session_count = Math.max(0, Math.trunc(toFiniteNumber(license.session_count, 0)));
+  license.error_reports = Math.max(0, Math.trunc(toFiniteNumber(license.error_reports, 0)));
+  license.sos_reports = Math.max(0, Math.trunc(toFiniteNumber(license.sos_reports, 0)));
+  license.piracy_flags = Math.max(0, Math.trunc(toFiniteNumber(license.piracy_flags, 0)));
+  license.duration_days = Math.max(0, Math.trunc(toFiniteNumber(license.duration_days, 0)));
+  license.device_locked = Boolean(license.device_locked && license.device_id);
+  if (license.mode === 'count') {
+    const computedRemaining = Math.max(0, license.analysis_limit - license.analysis_count);
+    const rawRemaining = toFiniteNumber(license.analyses_remaining, computedRemaining);
+    license.analyses_remaining = Math.max(0, Math.min(license.analysis_limit || rawRemaining, rawRemaining));
+  } else {
+    license.analyses_remaining = null;
+  }
+  return license;
 }
 function refreshComputedStatus(license){
   if (!license) return license;
+  normalizeLicenseShape(license);
+  const previous = String(license.status || '').trim().toLowerCase();
+  if (previous === 'blocked') return license;
   if (isExpired(license)) license.status = 'expired';
   else if (isCountExhausted(license)) license.status = 'quota_reached';
+  else if (license.activated_at || license.device_locked || license.session_count > 0 || license.analysis_count > 0) license.status = 'active';
+  else license.status = 'unused';
   return license;
+}
+function getLicenseAccessError(license){
+  if (!license) return 'Licence introuvable';
+  refreshComputedStatus(license);
+  if (license.status === 'blocked') return 'Licence bloquée';
+  if (license.status === 'expired' || isExpired(license)) return 'Licence expirée';
+  if (license.status === 'quota_reached' || isCountExhausted(license)) return 'Quota de captures atteint';
+  return '';
+}
+function restoreLicenseStatus(license){
+  if (!license) return license;
+  const previous = String(license.status || '').trim().toLowerCase();
+  if (previous === 'blocked') return license;
+  return refreshComputedStatus(license);
 }
 function safeIpHash(ip=''){ return !ip ? '' : 'ip_' + String(ip).split('.').slice(0,2).join('_'); }
 function sanitizeLicenseForClient(license){ const clone = { ...license }; delete clone.notes; delete clone.last_ip_hash; delete clone.client_meta; return clone; }
@@ -59,12 +95,12 @@ async function ensureFiles(){
     await fs.writeFile(EVENTS_FILE, seedEvents);
   }
 }
-async function readLicenses(){ await ensureFiles(); const raw = JSON.parse(await fs.readFile(LICENSE_FILE, 'utf8')); return Array.isArray(raw) ? raw : (Array.isArray(raw.licenses) ? raw.licenses : []); }
-async function writeLicenses(items){ await fs.writeFile(LICENSE_FILE, JSON.stringify({ licenses: items }, null, 2)); }
+async function readLicenses(){ await ensureFiles(); const raw = JSON.parse(await fs.readFile(LICENSE_FILE, 'utf8')); const items = Array.isArray(raw) ? raw : (Array.isArray(raw.licenses) ? raw.licenses : []); return items.map(item => refreshComputedStatus(item)); }
+async function writeLicenses(items){ await fs.writeFile(LICENSE_FILE, JSON.stringify({ licenses: items.map(item => refreshComputedStatus(item)) }, null, 2)); }
 async function readEvents(){ await ensureFiles(); return JSON.parse(await fs.readFile(EVENTS_FILE, 'utf8')); }
 async function writeEvents(items){ await fs.writeFile(EVENTS_FILE, JSON.stringify(items, null, 2)); }
 async function getLicense(key){ const items = await readLicenses(); return items.find(x => normalizeKey(x.license_key) === normalizeKey(key)) || null; }
-async function putLicense(license){ const items = await readLicenses(); const idx = items.findIndex(x => normalizeKey(x.license_key) === normalizeKey(license.license_key)); if (idx >= 0) items[idx] = license; else items.push(license); await writeLicenses(items); return license; }
+async function putLicense(license){ refreshComputedStatus(license); const items = await readLicenses(); const idx = items.findIndex(x => normalizeKey(x.license_key) === normalizeKey(license.license_key)); if (idx >= 0) items[idx] = license; else items.push(license); await writeLicenses(items); return license; }
 async function listLicenses(){ return readLicenses(); }
 async function appendEvent(event){ const items = await readEvents(); const full = { id:`evt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`, ...event }; items.push(full); await writeEvents(items); return full; }
 function signToken(payload, secret){ const header = { alg:'HS256', typ:'JWT' }; const enc = (obj) => Buffer.from(JSON.stringify(obj)).toString('base64url'); const body = `${enc(header)}.${enc(payload)}`; const sig = crypto.createHmac('sha256', secret).update(body).digest('base64url'); return `${body}.${sig}`; }
@@ -98,7 +134,7 @@ app.post('/api/license/portal', async (req, res) => {
     if (accessError) { await putLicense(license); return res.status(403).json({ ok:false, error: accessError }); }
     if (license.device_locked && license.device_id && license.device_id !== deviceId) return res.status(403).json({ ok:false, error:'Licence déjà liée à un autre appareil' });
 
-    const firstActivation = !license.activated_at;
+    const firstActivation = !license.activated_at || String(license.status || '').toLowerCase() === 'unused';
     license.status = 'active';
     license.device_id = deviceId;
     license.device_locked = true;
@@ -157,7 +193,7 @@ app.post('/api/license/report', async (req, res) => {
       }
       if (license.mode === 'count') license.analyses_remaining = Math.max(0, remaining - 1);
       license.analysis_count = Number(license.analysis_count || 0) + 1;
-      refreshComputedStatus(license);
+      restoreLicenseStatus(license);
     }
     if (type === 'error_report') license.error_reports = Number(license.error_reports || 0) + 1;
     if (type === 'sos_report') license.sos_reports = Number(license.sos_reports || 0) + 1;
@@ -213,13 +249,28 @@ app.post('/api/license/block', async (req, res) => {
     let license = await getLicense(key);
     if (!license) return res.status(404).json({ ok:false, error:'Licence introuvable' });
 
-    if (action === 'block') license.status = 'blocked';
-    else if (action === 'unblock') license.status = 'active';
-    else if (action === 'reset_device') { license.device_id = null; license.device_locked = false; license.status = 'unused'; license.activated_at = null; }
+    if (action === 'block') {
+      license.status = 'blocked';
+    }
+    else if (action === 'unblock') {
+      restoreLicenseStatus(license);
+    }
+    else if (action === 'reset_device') {
+      license.device_id = null;
+      license.device_locked = false;
+      license.activated_at = null;
+      license.last_seen_at = null;
+      license.last_ip_hash = null;
+      license.session_count = 0;
+      restoreLicenseStatus(license);
+    }
     else if (action === 'extend_days') {
-      const base = license.expiration ? new Date(license.expiration + 'T00:00:00Z') : new Date();
-      base.setUTCDate(base.getUTCDate() + Math.max(days,1));
-      license.expiration = base.toISOString().slice(0,10);
+      const anchor = isExpired(license)
+        ? new Date(new Date().toISOString().slice(0,10) + 'T00:00:00Z')
+        : (license.expiration ? new Date(String(license.expiration).slice(0,10) + 'T00:00:00Z') : new Date());
+      anchor.setUTCDate(anchor.getUTCDate() + Math.max(days,1));
+      license.expiration = anchor.toISOString().slice(0,10);
+      restoreLicenseStatus(license);
     } else {
       return res.status(400).json({ ok:false, error:'Action inconnue' });
     }
