@@ -112,7 +112,7 @@ document.getElementById('btnActivate').addEventListener('click', async () => {
     setMsg('Vérification premium en cours…', 'info');
     const deviceId = await getDeviceId();
     const clientMeta = { ua:navigator.userAgent || '', lang:navigator.language || '', platform:navigator.platform || '' };
-    const result = await postJson('https://forex-capture-analyzer-multi-deploy-pack.onrender.com/index.html', { key, deviceId, clientMeta });
+    const result = await postJson('/api/license/portal', { key, deviceId, clientMeta });
     if(result.mode === 'admin'){
       localStorage.setItem(ADMIN_TOKEN_KEY, result.adminToken || '');
       localStorage.setItem(ADMIN_MODE_KEY, 'yes');
