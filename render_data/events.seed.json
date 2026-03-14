@@ -48,5 +48,16 @@
       "source": "ui",
       "ts": "2026-03-14T20:15:43.173Z"
     }
+  },
+  {
+    "id": "evt_1773519361071_mv3fji",
+    "created_at": "2026-03-14T20:16:01.070Z",
+    "event_type": "analysis_run",
+    "license_key": "FXA-NKN9-X9T5-YYVV-RVKE",
+    "device_id": "PC-DC7781F2579F",
+    "details": {
+      "source": "ui",
+      "ts": "2026-03-14T20:15:51.758Z"
+    }
   }
 ]
