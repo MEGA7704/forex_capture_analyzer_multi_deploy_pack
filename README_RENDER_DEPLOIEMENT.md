@@ -53,3 +53,17 @@ Mise à jour V28 :
 - Dashboard client avec suivi licence en temps réel par rafraîchissement automatique.
 - Dashboard admin avec actualisation automatique des statistiques et de la liste des licences.
 - Popup support épuré.
+
+
+## Important — mémoire des licences sur Render
+
+Pour que les licences expirées restent bloquées même après redémarrage, le service doit utiliser un disque persistant Render.
+
+- Attacher un **Persistent Disk** au service.
+- Vérifier que `RENDER_DISK_PATH` est disponible côté serveur.
+- Le projet enregistre alors `licenses.json` et `events.json` dans ce disque.
+- Au démarrage, le serveur **recalcule automatiquement** les statuts :
+  - `expired` selon la date du serveur
+  - `quota_reached` selon `analysis_count` par rapport à `analysis_limit`
+
+Ainsi, une licence expirée ou un quota épuisé reste bloqué après redémarrage.
