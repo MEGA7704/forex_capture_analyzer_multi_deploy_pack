@@ -32,6 +32,7 @@ input,select,button,textarea{
 button{cursor:pointer}
 button.primary{background:linear-gradient(180deg, rgba(22,217,199,.28), rgba(22,217,199,.08));border-color:rgba(22,217,199,.35)}
 button.warn{background:linear-gradient(180deg, rgba(255,212,0,.24), rgba(255,212,0,.08));border-color:rgba(255,212,0,.35)}
+button:disabled{opacity:.6;cursor:not-allowed}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(170px,1fr));gap:10px;margin-top:14px}
 .kv{padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(0,0,0,.12)}
 .kv span{display:block;font-size:11px;color:rgba(255,255,255,.66)}
@@ -51,13 +52,13 @@ tbody tr:hover{background:rgba(255,255,255,.04)}
   <div class="card">
     <div class="row" style="justify-content:space-between">
       <div>
-        <h1>Dashboard Admin Licences — V28 PREMIUM Temps Réel</h1>
+        <h1>Dashboard Admin Licences — V28 </h1>
         <div class="sub">Gestion temps réel des licences, blocage piratage, limite appareil, statistiques clients et expiration automatique.</div>
       </div>
       <div class="row">
         <input id="adminToken" type="password" placeholder="ADMIN_TOKEN" style="min-width:240px"/>
         <button id="btnSaveToken" class="primary">Enregistrer token</button>
-        <a href="/" style="text-decoration:none"><button class="warn">Retour logiciel</button></a>
+        <a href="/" style="text-decoration:none"><button class="warn" type="button">Retour logiciel</button></a>
       </div>
     </div>
 
@@ -200,17 +201,64 @@ const TOKEN_KEY = 'FXA_ADMIN_TOKEN_V28';
 const $ = id => document.getElementById(id);
 $('adminToken').value = localStorage.getItem(TOKEN_KEY) || '';
 
-function adminHeaders(){
+let autoRefreshTimer = null;
+let isRefreshing = false;
+let lastGeneratedLicenses = [];
+
+function adminHeaders(extra = {}){
   const token = localStorage.getItem(TOKEN_KEY) || '';
-  return { 'Authorization': 'Bearer ' + token };
+  return {
+    'Accept': 'application/json',
+    ...(token ? { 'Authorization': 'Bearer ' + token } : {}),
+    ...extra
+  };
 }
-async function fetchJson(url, opts={}){
-  const res = await fetch(url, opts);
-  const data = await res.json().catch(()=>({ok:false,error:'Réponse invalide'}));
-  if(!res.ok) throw new Error(data.error || ('Erreur HTTP ' + res.status));
+
+function escapeHtml(value){
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function fmt(v){
+  return (v === null || typeof v === 'undefined' || v === '') ? '—' : String(v);
+}
+
+async function fetchJson(url, opts = {}){
+  let res;
+
+  try{
+    res = await fetch(url, opts);
+  }catch(networkError){
+    throw new Error('Impossible de joindre le serveur.');
+  }
+
+  const raw = await res.text();
+
+  if(!raw || !raw.trim()){
+    if(res.ok){
+      throw new Error('Le serveur a renvoyé une réponse vide.');
+    }
+    throw new Error('Le serveur a renvoyé une erreur vide (HTTP ' + res.status + ').');
+  }
+
+  let data;
+  try{
+    data = JSON.parse(raw);
+  }catch(parseError){
+    console.error('Réponse non JSON reçue depuis', url, raw);
+    throw new Error('Réponse JSON invalide du serveur.');
+  }
+
+  if(!res.ok){
+    throw new Error(data.error || data.message || ('Erreur HTTP ' + res.status));
+  }
+
   return data;
 }
-function fmt(v){ return (v === null || typeof v === 'undefined' || v === '') ? '—' : String(v); }
 
 $('btnSaveToken').onclick = () => {
   localStorage.setItem(TOKEN_KEY, $('adminToken').value.trim());
@@ -218,21 +266,31 @@ $('btnSaveToken').onclick = () => {
 };
 
 async function loadStats(){
-  const data = await fetchJson('/api/license/stats', { headers: adminHeaders() });
-  $('k_total').textContent = data.totals.licenses;
-  $('k_active').textContent = data.totals.activated;
-  $('k_blocked').textContent = data.totals.blocked;
-  $('k_expired').textContent = data.totals.expired;
-  $('k_analysis').textContent = data.eventCounts.analysis_run || 0;
-  $('k_errors').textContent = data.eventCounts.error_report || 0;
-  $('k_sos').textContent = data.eventCounts.sos_report || 0;
-  $('k_remaining').textContent = data.totals.totalRemaining;
+  const data = await fetchJson('/api/license/stats', {
+    method:'GET',
+    headers: adminHeaders()
+  });
 
-  $('planStats').innerHTML = Object.entries(data.byPlan).map(([k,v]) =>
-    '<div style="margin-bottom:6px"><span class="badge">' + k + '</span> <b>' + v + '</b></div>'
+  const totals = data.totals || {};
+  const eventCounts = data.eventCounts || {};
+  const byPlan = data.byPlan || {};
+  const recent = Array.isArray(data.recent) ? data.recent : [];
+
+  $('k_total').textContent = totals.licenses ?? 0;
+  $('k_active').textContent = totals.activated ?? 0;
+  $('k_blocked').textContent = totals.blocked ?? 0;
+  $('k_expired').textContent = totals.expired ?? 0;
+  $('k_analysis').textContent = eventCounts.analysis_run ?? 0;
+  $('k_errors').textContent = eventCounts.error_report ?? 0;
+  $('k_sos').textContent = eventCounts.sos_report ?? 0;
+  $('k_remaining').textContent = totals.totalRemaining ?? 0;
+
+  $('planStats').innerHTML = Object.entries(byPlan).map(([k,v]) =>
+    '<div style="margin-bottom:6px"><span class="badge">' + escapeHtml(k) + '</span> <b>' + escapeHtml(v) + '</b></div>'
   ).join('') || 'Aucune donnée.';
-  $('recentLog').innerHTML = (data.recent || []).map(ev =>
-    '<div style="margin-bottom:8px"><b>' + ev.event_type + '</b> • ' + ev.license_key + '<br><span class="small">' + ev.created_at + ' • ' + (ev.device_id || '—') + '</span></div>'
+
+  $('recentLog').innerHTML = recent.map(ev =>
+    '<div style="margin-bottom:8px"><b>' + escapeHtml(ev.event_type) + '</b> • ' + escapeHtml(ev.license_key) + '<br><span class="small">' + escapeHtml(ev.created_at) + ' • ' + escapeHtml(ev.device_id || '—') + '</span></div>'
   ).join('') || 'Aucun événement.';
 }
 
@@ -240,33 +298,63 @@ async function loadList(){
   const q = encodeURIComponent($('q').value.trim());
   const status = encodeURIComponent($('statusFilter').value);
   const plan = encodeURIComponent($('planFilter').value);
-  const data = await fetchJson('/api/license/list?q=' + q + '&status=' + status + '&plan=' + plan + '&limit=300', { headers: adminHeaders() });
-  $('tbody').innerHTML = (data.items || []).map(item => `
+
+  const data = await fetchJson('/api/license/list?q=' + q + '&status=' + status + '&plan=' + plan + '&limit=300', {
+    method:'GET',
+    headers: adminHeaders()
+  });
+
+  const items = Array.isArray(data.items) ? data.items : [];
+
+  $('tbody').innerHTML = items.map(item => `
     <tr>
-      <td><b>${item.license_key}</b></td>
-      <td>${fmt(item.plan_id)}</td>
-      <td><span class="badge">${fmt(item.status)}</span></td>
-      <td>${fmt(item.device_id)}</td>
-      <td>${fmt(item.expiration)}</td>
-      <td>${fmt(item.analyses_remaining)}</td>
-      <td>${fmt(item.analysis_count)}</td>
+      <td><b>${escapeHtml(item.license_key)}</b></td>
+      <td>${escapeHtml(fmt(item.plan_id))}</td>
+      <td><span class="badge">${escapeHtml(fmt(item.status))}</span></td>
+      <td>${escapeHtml(fmt(item.device_id))}</td>
+      <td>${escapeHtml(fmt(item.expiration))}</td>
+      <td>${escapeHtml(fmt(item.analyses_remaining))}</td>
+      <td>${escapeHtml(fmt(item.analysis_count))}</td>
       <td>
-        <button onclick="prefillAction('${item.license_key}')">Choisir</button>
+        <button type="button" onclick="prefillAction('${String(item.license_key || '').replace(/'/g, "\\'")}')">Choisir</button>
       </td>
     </tr>
   `).join('') || '<tr><td colspan="8">Aucune licence trouvée.</td></tr>';
 }
 
 window.prefillAction = function(key){
-  $('actionKey').value = key;
+  $('actionKey').value = key || '';
   window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 };
 
+async function refreshDashboard(showAlertOnError = true){
+  if(isRefreshing) return;
+  isRefreshing = true;
+  $('btnRefresh').disabled = true;
+  $('btnRefresh').textContent = 'Chargement...';
+
+  try{
+    await Promise.all([loadStats(), loadList()]);
+  }catch(err){
+    console.error('Erreur refreshDashboard:', err);
+    if(showAlertOnError){
+      alert(err.message || 'Erreur pendant le rafraîchissement.');
+    }
+  }finally{
+    isRefreshing = false;
+    $('btnRefresh').disabled = false;
+    $('btnRefresh').textContent = 'Rafraîchir';
+  }
+}
+
 $('btnRunAction').onclick = async () => {
   try{
+    $('btnRunAction').disabled = true;
+    $('btnRunAction').textContent = 'Exécution...';
+
     const data = await fetchJson('/api/license/block', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', ...adminHeaders() },
+      headers: adminHeaders({ 'Content-Type':'application/json' }),
       body: JSON.stringify({
         key: $('actionKey').value.trim(),
         action: $('actionType').value,
@@ -274,23 +362,20 @@ $('btnRunAction').onclick = async () => {
         reason: $('actionReason').value.trim()
       })
     });
-    alert('Action réussie sur ' + data.license.license_key);
-    await Promise.all([loadStats(), loadList()]);
+
+    alert('Action réussie sur ' + (data.license?.license_key || 'la licence'));
+    await refreshDashboard(false);
   }catch(err){
-    alert(err.message);
+    alert(err.message || 'Action impossible.');
+  }finally{
+    $('btnRunAction').disabled = false;
+    $('btnRunAction').textContent = 'Exécuter';
   }
 };
 
 $('btnRefresh').onclick = async () => {
-  try{
-    await Promise.all([loadStats(), loadList()]);
-  }catch(err){
-    alert(err.message);
-  }
+  await refreshDashboard(true);
 };
-
-
-let lastGeneratedLicenses = [];
 
 function setBulkPreset(preset){
   $('bulkCount').value = preset.count || 1000;
@@ -306,6 +391,10 @@ function setBulkPreset(preset){
 async function generateBulkLicenses(preset = null){
   try{
     if (preset) setBulkPreset(preset);
+
+    $('btnGenerateBulk').disabled = true;
+    $('btnGenerateBulk').textContent = 'Génération...';
+
     const payload = {
       count: Number($('bulkCount').value || 1000),
       mode: $('bulkMode').value,
@@ -316,22 +405,28 @@ async function generateBulkLicenses(preset = null){
       duration_days: Number($('bulkDurationDays').value || 365),
       notes: $('bulkNotes').value.trim()
     };
+
     $('bulkResult').textContent = 'Génération en cours...';
+
     const data = await fetchJson('/api/admin/licenses/generate-bulk', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', ...adminHeaders() },
+      headers: adminHeaders({ 'Content-Type':'application/json' }),
       body: JSON.stringify(payload)
     });
-    lastGeneratedLicenses = data.licenses || [];
-    $('bulkResult').textContent =
-      `Succès : ${data.created_count} licences créées pour ${data.plan.plan_id}
 
-` +
+    lastGeneratedLicenses = Array.isArray(data.licenses) ? data.licenses : [];
+
+    $('bulkResult').textContent =
+      'Succès : ' + (data.created_count ?? 0) + ' licences créées pour ' + (data.plan?.plan_id || payload.plan_id) + '\n\n' +
       JSON.stringify(data.sample || [], null, 2);
-    await Promise.all([loadStats(), loadList()]);
+
+    await refreshDashboard(false);
   }catch(err){
-    $('bulkResult').textContent = err.message;
-    alert(err.message);
+    $('bulkResult').textContent = err.message || 'Erreur de génération.';
+    alert(err.message || 'Erreur de génération.');
+  }finally{
+    $('btnGenerateBulk').disabled = false;
+    $('btnGenerateBulk').textContent = 'Créer le lot personnalisé';
   }
 }
 
@@ -340,6 +435,7 @@ function downloadLastGenerated(){
     alert('Aucun lot disponible.');
     return;
   }
+
   const blob = new Blob([JSON.stringify(lastGeneratedLicenses, null, 2)], { type:'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -359,11 +455,22 @@ $('btnPresetCapture100').onclick = () => generateBulkLicenses({ count:1000, mode
 $('btnPresetDuration30').onclick = () => generateBulkLicenses({ count:1000, mode:'duration', plan_id:'DURATION_30', plan_label:'30 Jours', price_usdt:60, analysis_limit:0, duration_days:30, notes:'Lot admin DURATION_30' });
 $('btnPresetDuration365').onclick = () => generateBulkLicenses({ count:1000, mode:'duration', plan_id:'DURATION_365', plan_label:'365 Jours', price_usdt:675, analysis_limit:0, duration_days:365, notes:'Lot admin DURATION_365' });
 
+$('q').addEventListener('keydown', async (e) => {
+  if(e.key === 'Enter') await refreshDashboard(true);
+});
+$('statusFilter').addEventListener('change', async () => {
+  await refreshDashboard(true);
+});
+$('planFilter').addEventListener('change', async () => {
+  await refreshDashboard(true);
+});
+
 (async function init(){
   try{
-    await Promise.all([loadStats(), loadList()]);
-    setInterval(async ()=>{
-      try{ await Promise.all([loadStats(), loadList()]); }catch(err){ console.warn(err); }
+    await refreshDashboard(false);
+
+    autoRefreshTimer = setInterval(async () => {
+      await refreshDashboard(false);
     }, 15000);
   }catch(err){
     console.warn(err);
