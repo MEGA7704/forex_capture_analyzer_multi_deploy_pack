@@ -353,68 +353,177 @@ a.btn:hover{
         </div>
 
   
+<script src="config.js"></script>
 <script>
 const SESSION_KEY = 'FXA_V28_SESSION';
 const ADMIN_TOKEN_KEY = 'FXA_ADMIN_TOKEN_V28';
 const ADMIN_MODE_KEY = 'FXA_ADMIN_MODE_V28';
+
+const DEFAULT_API_BASE = 'https://forex-capture-analyzer-multi-deploy-pack.onrender.com';
+const API_BASE = String(
+  (window.FXA_CONFIG && window.FXA_CONFIG.API_BASE) || DEFAULT_API_BASE
+).replace(/\/$/, '');
+
+function apiUrl(path){
+  return API_BASE + path;
+}
+
 const msg = document.getElementById('msg');
 const input = document.getElementById('licenseKey');
+
 function setMsg(text, type){
   msg.innerHTML = text;
-  msg.style.borderColor = type === 'ok' ? 'rgba(22,217,199,.28)' : (type === 'bad' ? 'rgba(255,88,110,.28)' : 'rgba(255,255,255,.08)');
-  msg.style.background = type === 'ok' ? 'rgba(22,217,199,.08)' : (type === 'bad' ? 'rgba(255,88,110,.08)' : 'rgba(0,0,0,.18)');
+  msg.style.borderColor =
+    type === 'ok' ? 'rgba(22,217,199,.28)' :
+    type === 'bad' ? 'rgba(255,88,110,.28)' :
+    'rgba(255,255,255,.08)';
+
+  msg.style.background =
+    type === 'ok' ? 'rgba(22,217,199,.08)' :
+    type === 'bad' ? 'rgba(255,88,110,.08)' :
+    'rgba(0,0,0,.18)';
+
   msg.style.color = 'rgba(255,255,255,.86)';
 }
+
 async function sha256(text){
   const enc = new TextEncoder().encode(text);
   const hash = await crypto.subtle.digest('SHA-256', enc);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+  return Array.from(new Uint8Array(hash))
+    .map(b => b.toString(16).padStart(2,'0'))
+    .join('');
 }
+
 async function getDeviceId(){
-  const seed = [navigator.userAgent||'', navigator.platform||'', navigator.language||'', screen.width + 'x' + screen.height, Intl.DateTimeFormat().resolvedOptions().timeZone || '', 'FXA_V28_LOGIN'].join('|');
+  const seed = [
+    navigator.userAgent || '',
+    navigator.platform || '',
+    navigator.language || '',
+    screen.width + 'x' + screen.height,
+    Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+    'FXA_V28_LOGIN'
+  ].join('|');
+
   const hex = await sha256(seed);
-  return 'PC-' + hex.slice(0,12).toUpperCase();
+  return 'PC-' + hex.slice(0, 12).toUpperCase();
 }
-async function postJson(url, body){
-  const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body || {}) });
-  const data = await res.json().catch(() => ({ ok:false, error:'Réponse serveur invalide.' }));
-  if(!res.ok) throw new Error(data.error || ('Erreur HTTP ' + res.status));
+
+async function postJson(path, body){
+  const res = await fetch(apiUrl(path), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body || {})
+  });
+
+  const contentType = res.headers.get('content-type') || '';
+  let data = null;
+
+  if (contentType.includes('application/json')) {
+    data = await res.json();
+  } else {
+    const raw = await res.text().catch(() => '');
+    throw new Error(raw ? 'Réponse serveur non JSON.' : 'Réponse serveur invalide.');
+  }
+
+  if (!res.ok) {
+    throw new Error(data.error || ('Erreur HTTP ' + res.status));
+  }
+
   return data;
 }
+
 (async function boot(){
-  const deviceId = await getDeviceId();
-  document.getElementById('deviceBadge').textContent = 'Appareil: ' + deviceId;
+  try {
+    const deviceId = await getDeviceId();
+    document.getElementById('deviceBadge').textContent = 'Appareil: ' + deviceId;
+  } catch {
+    document.getElementById('deviceBadge').textContent = 'Appareil: inconnu';
+  }
+
+  document.getElementById('year').textContent = new Date().getFullYear();
 })();
 
 document.getElementById('btnActivate').addEventListener('click', async () => {
   const key = (input.value || '').trim().toUpperCase();
-  if(!key){ setMsg('Veuillez entrer votre clé.', 'bad'); input.focus(); return; }
-  try{
+
+  if (!key) {
+    setMsg('Veuillez entrer votre clé.', 'bad');
+    input.focus();
+    return;
+  }
+
+  try {
     setMsg('Vérification premium en cours…', 'info');
+
     const deviceId = await getDeviceId();
-    const clientMeta = { ua:navigator.userAgent || '', lang:navigator.language || '', platform:navigator.platform || '' };
-    const result = await postJson('/api/license/portal', { key, deviceId, clientMeta });
-    if(result.mode === 'admin'){
+    const clientMeta = {
+      ua: navigator.userAgent || '',
+      lang: navigator.language || '',
+      platform: navigator.platform || '',
+      source: 'cloudflare-pages',
+      appVersion: 'V28'
+    };
+
+    const result = await postJson('/api/license/portal', {
+      key,
+      deviceId,
+      clientMeta
+    });
+
+    if (!result || !result.ok) {
+      setMsg('Réponse serveur invalide.', 'bad');
+      return;
+    }
+
+    if (result.mode === 'admin') {
       localStorage.setItem(ADMIN_TOKEN_KEY, result.adminToken || '');
       localStorage.setItem(ADMIN_MODE_KEY, 'yes');
       setMsg('Clé admin reconnue. Redirection vers le dashboard admin…', 'ok');
-      setTimeout(() => location.href = 'admin.html', 350);
+
+      setTimeout(() => {
+        location.href = API_BASE + (result.redirect || '/admin.html');
+      }, 350);
       return;
     }
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ token: result.token, deviceId, key }));
-    localStorage.removeItem(ADMIN_MODE_KEY);
-    setMsg('Licence validée avec succès. Redirection vers l’application…', 'ok');
-    setTimeout(() => location.href = 'app.html', 350);
-  }catch(err){
+
+    if (result.mode === 'app') {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({
+        token: result.token || '',
+        deviceId,
+        key
+      }));
+      localStorage.removeItem(ADMIN_MODE_KEY);
+
+      setMsg('Licence validée avec succès. Redirection vers l’application…', 'ok');
+
+      setTimeout(() => {
+        location.href = API_BASE + (result.redirect || '/app.html');
+      }, 350);
+      return;
+    }
+
+    setMsg('Réponse serveur invalide.', 'bad');
+  } catch(err) {
     const message = err.message || 'Activation impossible.';
-    if(/expir|quota|captures/i.test(message)) {
-      setMsg('⚠️ <b>Licence expirée</b><br>Votre licence Forex Capture Analyzer PRO est arrivée à expiration.<br>Pour continuer à utiliser toutes les fonctionnalités d’analyse avancée, veuillez renouveler votre licence.<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px"><a class="btn warn" href="https://forexanalyzer.e-monsite.com/pages/tarifs.html" target="_self">Renouveler ma licence</a><a class="btn primary" href="https://forexanalyzer.e-monsite.com/pages/contact-support.html" target="_self">Contacter le support</a></div>', 'bad');
+
+    if (/expir|quota|captures/i.test(message)) {
+      setMsg(
+        '⚠️ <b>Licence expirée</b><br>Votre licence Forex Capture Analyzer PRO est arrivée à expiration.<br>Pour continuer à utiliser toutes les fonctionnalités d’analyse avancée, veuillez renouveler votre licence.<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px"><a class="btn warn" href="https://forexanalyzer.e-monsite.com/pages/tarifs.html" target="_self">Renouveler ma licence</a><a class="btn primary" href="https://forexanalyzer.e-monsite.com/pages/contact-support.html" target="_self">Contacter le support</a></div>',
+        'bad'
+      );
       return;
     }
+
     setMsg(message, 'bad');
+    console.error('Activation error:', err);
   }
 });
-input.addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('btnActivate').click(); });
+
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    document.getElementById('btnActivate').click();
+  }
+});
 </script>
-</body>
-</html>
