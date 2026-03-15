@@ -1,0 +1,3266 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Forex Capture Analyzer Premium — Vrai système temps réel V28</title>
+<style>
+  :root{
+    --bg1:#0b1020; --bg2:#0d2b2b; --bg3:#1a0f2e;
+    --ink: rgba(255,255,255,.92);
+    --muted: rgba(255,255,255,.68);
+    --stroke: rgba(255,255,255,.12);
+    --shadow: 0 22px 60px rgba(0,0,0,.45);
+    --radius: 18px;
+    --ok: #2fe38c; --warn:#ffcc66; --bad:#ff5b6e; --info:#88a7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Arial,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 700px at 16% 10%, var(--bg3) 0%, transparent 60%),
+      radial-gradient(1200px 700px at 92% 18%, var(--bg2) 0%, transparent 60%),
+      linear-gradient(160deg, var(--bg1), #070a14);
+    overflow-x:hidden;
+  }
+
+  .wrap{ width:min(2000px, calc(100vw - 28px)); margin:14px auto 18px; }
+
+  /* Top banner */
+  .topbar{
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(10px);
+    background: linear-gradient(180deg, rgba(8,10,20,.88), rgba(8,10,20,.56));
+    border:1px solid rgba(255,255,255,.10);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  .topbar .bd{ padding:12px 12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .brand{display:flex; gap:12px; align-items:center; flex: 1 1 auto; min-width: 220px;}
+  .logo{
+    width:46px;height:46px;border-radius:16px;
+    border:1px solid var(--stroke);
+    background: linear-gradient(135deg, rgba(47,227,140,.22), rgba(255,204,102,.16), rgba(136,167,255,.18));
+    box-shadow:var(--shadow);
+    flex:0 0 auto;
+  }
+  .title h1{margin:0;font-size:16px}
+  .title .sub{margin-top:3px;font-size:12.5px;color:var(--muted);line-height:1.35}
+
+  .bannerBtns{ display:flex; gap:10px; flex-wrap:wrap; align-items:stretch; flex: 0 0 auto; }
+  .bbtn{
+    flex:0 0 auto;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.08);
+    color:var(--ink);
+    padding:12px 12px;
+    border-radius:14px;
+    cursor:pointer;
+    font-weight:1000;
+    font-size:13px;
+    user-select:none;
+    transition: transform .06s ease, background .2s ease;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    min-height:46px;
+    min-width: 220px;
+  }
+  .bbtn.compact{min-width: 180px; padding-left:14px; padding-right:14px;}
+
+  .bbtn:hover{background: rgba(255,255,255,.12)}
+  .bbtn:active{transform: translateY(1px)}
+  .bbtn.primary{ background: rgba(136,167,255,.12); border-color: rgba(136,167,255,.30); }
+  .bbtn.warn{ background: rgba(255,204,102,.10); border-color: rgba(255,204,102,.25); }
+  .tag{
+    font-size:11px; font-weight:1000; color:rgba(255,255,255,.78);
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.18);
+    padding:6px 8px; border-radius:999px;
+    white-space:nowrap;
+  }
+  .mono{font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+
+  /* Cards & buttons */
+  .card{
+    border:1px solid var(--stroke);
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+    min-width:0;
+  }
+  .btn{
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.08);
+    color:var(--ink);
+    padding:10px 12px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:1000;
+    font-size:13px;
+    user-select:none;
+    transition: transform .06s ease, background .2s ease;
+    white-space:nowrap;
+  }
+  .btn:hover{background: rgba(255,255,255,.12)}
+  .btn:active{transform: translateY(1px)}
+  .btn.ok{background: rgba(47,227,140,.18); border-color: rgba(47,227,140,.35)}
+  .btn.bad{background: rgba(255,91,110,.14); border-color: rgba(255,91,110,.35)}
+  .btn.small{padding:9px 10px; font-size:12px}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+  .note{font-size:12.5px; color:var(--muted); line-height:1.45}
+
+  select, input[type="number"], input[type="url"]{
+    padding:9px 10px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(15,24,51,.62);
+    color: rgba(255,255,255,.92);
+    outline:none;
+    font-weight:900;
+  }
+  input[type="url"]{flex:1 1 260px; min-width:240px}
+
+  /* Visual zone */
+  .visualCard{ margin-top:12px; }
+  .visualTop{
+    padding:12px 12px;
+    display:flex; gap:10px; align-items:flex-start; justify-content:space-between;
+    flex-wrap:wrap;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    background: linear-gradient(180deg, rgba(8,10,20,.55), rgba(8,10,20,.20));
+  }
+  .visualTop .left{ min-width: 260px; flex: 1 1 auto; }
+  .visualTop .right{ flex: 0 0 auto; }
+  .canvasWrap{
+    position:relative;
+    height: calc(100vh - 220px);
+    min-height: 520px;
+    padding:12px;
+  }
+  @media(max-width:1100px){
+    .canvasWrap{ height: 72vh; min-height: 420px; }
+    .bbtn{ min-width: 180px; }
+  }
+  canvas{
+    width:100%; height:100%;
+    display:block;
+    background: rgba(10,14,30,.65);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,.10);
+  }
+  .overlayInfo{
+    position:fixed; left:24px; top:24px;
+    background: rgba(0,0,0,.35);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius: 14px;
+    padding:10px;
+    backdrop-filter: blur(8px);
+    max-width: min(1200px, calc(100% - 48px));
+    font-size:12.5px;
+    color: rgba(255,255,255,.9);
+    line-height:1.35;
+    pointer-events:none;
+  }
+  .overlayInfo b{color: rgba(255,204,102,.95)}
+
+  #fileInput{
+    position:absolute !important; left:-9999px !important; top:auto !important;
+    width:1px !important; height:1px !important; opacity:0 !important; pointer-events:none !important;
+  }
+
+  /* Modal */
+  .modalBack{
+    position:fixed; inset:0;
+    background: rgba(0,0,0,.55);
+    display:none;
+    align-items:center; justify-content:center;
+    z-index:2000;
+    padding:16px;
+  }
+  .modalBack.show{display:flex}
+  .modal{
+    width:min(1180px, 96vw);
+    max-height:min(94vh, 980px);
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(11,16,32,.92);
+    border-radius:18px;
+    box-shadow: var(--shadow);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .modalHead{
+    padding:12px 14px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    border-bottom:1px solid rgba(255,255,255,.10);
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    position:sticky;
+    top:0;
+    z-index:5;
+    flex:0 0 auto;
+  }
+  .modalTitle{font-weight:1000}
+  .modalBody{
+    padding:14px;
+    overflow-y:auto;
+    overflow-x:hidden;
+    max-height:calc(94vh - 78px);
+    scrollbar-width:thin;
+    scrollbar-color: rgba(255,255,255,.24) transparent;
+    flex:1 1 auto;
+  }
+  .modalBody::-webkit-scrollbar{width:10px}
+  .modalBody::-webkit-scrollbar-track{background:transparent}
+  .modalBody::-webkit-scrollbar-thumb{
+    background:rgba(255,255,255,.18);
+    border-radius:999px;
+    border:2px solid transparent;
+    background-clip:padding-box;
+  }
+  .popupSectionTitle{
+    margin:18px 0 10px;
+    font-size:13px;
+    font-weight:900;
+    letter-spacing:.35px;
+    text-transform:uppercase;
+    color:rgba(255,255,255,.92);
+  }
+  .popupDivider{
+    height:1px;
+    margin:18px 0;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.16), transparent);
+  }
+  .popupActionBar{
+    position:sticky;
+    bottom:-14px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+    margin-top:16px;
+    padding-top:12px;
+    padding-bottom:4px;
+    background:linear-gradient(180deg, rgba(8,16,20,0), rgba(8,16,20,.96) 36%);
+  }
+  .xbtn{
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.08);
+    color:var(--ink);
+    border-radius:12px;
+    padding:8px 10px;
+    cursor:pointer;
+    font-weight:1000;
+  }
+  .toggles{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+  .toggle{
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    padding:8px 10px;
+    border-radius:12px;
+    font-size:12px;
+    font-weight:1000;
+    cursor:pointer;
+    user-select:none;
+  }
+  .toggle.on{outline:2px solid rgba(136,167,255,.35)}
+
+  .grid{
+    display:grid; grid-template-columns: repeat(4, minmax(160px, 1fr));
+    gap:10px;
+  }
+  @media(max-width:980px){ .grid{grid-template-columns: repeat(2, minmax(160px, 1fr));} }
+  .kv{
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.14);
+    border-radius:14px;
+    padding:10px 12px;
+    min-height:54px;
+  }
+  .kv span{display:block; font-size:11px; color:var(--muted)}
+  .kv b{display:block; font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; font-size:12.5px; margin-top:4px}
+
+  .liveBadge{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.18);
+    padding:7px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:1000;
+  }
+  .dotLive{width:10px;height:10px;border-radius:999px;background:rgba(255,204,102,.95)}
+  .dotLive.on{ background: rgba(47,227,140,.95); animation: pulseLive 1.1s infinite; }
+  @keyframes pulseLive{ 0%,100%{ box-shadow:0 0 0 rgba(47,227,140,0);} 50%{ box-shadow:0 0 18px rgba(47,227,140,.75);} }
+
+  /* Inline overlay toggles (Trendline / Zones / Limit / TP / Bands) */
+  .togglesInline{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .tbtn{
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.07);
+    color: rgba(255,255,255,.92);
+    padding:7px 10px;
+    border-radius: 999px;
+    cursor:pointer;
+    font-weight:1000;
+    font-size:12px;
+    user-select:none;
+    transition: transform .06s ease, background .2s ease;
+  }
+  .tbtn:hover{ background: rgba(255,255,255,.11); }
+  .tbtn:active{ transform: translateY(1px); }
+  .tbtn.on{
+    outline: 2px solid rgba(136,167,255,.35);
+    background: rgba(136,167,255,.12);
+    border-color: rgba(136,167,255,.30);
+  }
+
+
+  /* Guide popup content */
+  .guideWrap{ max-height: min(70vh, 720px); overflow:auto; padding-right:6px; }
+  .guideWrap h2{ margin: 14px 0 8px; font-size: 16px; }
+  .guideWrap h3{ margin: 12px 0 6px; font-size: 14px; }
+  .guideWrap p, .guideWrap li{ font-size: 13px; color: rgba(255,255,255,.86); line-height: 1.55; }
+  .guideWrap ul, .guideWrap ol{ margin: 8px 0 10px 18px; }
+  .hr{ height:1px; background: rgba(255,255,255,.10); margin: 12px 0; }
+  .callout{
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.16);
+    border-radius:14px;
+    padding:10px 12px;
+    margin: 10px 0;
+  }
+  .imgPh{
+    border:1px dashed rgba(255,255,255,.22);
+    border-radius:14px;
+    padding:12px;
+    margin:10px 0;
+    color: rgba(255,255,255,.70);
+    font-size:12.5px;
+  }
+
+
+  /* License status pill */
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 10px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    color: rgba(255,255,255,.90);
+    font-weight: 800;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .chip.bad{ border-color: rgba(255,120,120,.35); background: rgba(255,120,120,.10); }
+  .chip.ok{ border-color: rgba(120,255,180,.25); background: rgba(120,255,180,.08); }
+
+  /* Activation overlay (mandatory) */
+  #activationOverlay{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.86);
+    display:none;
+    align-items:center; justify-content:center;
+    z-index:99998; /* below disclaimer overlay (99999) */
+  }
+  #activationOverlay .box{
+    width:min(820px,92%);
+    max-height:86vh;
+    background:#111;
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:18px;
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  #activationOverlay .scroll{
+    overflow:auto;
+    padding-right:8px;
+    font-size:13px;
+    line-height:1.6;
+  }
+  #activationOverlay .row2{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+  }
+  #activationKey{
+    flex:1;
+    min-width: 240px;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.06);
+    color: rgba(255,255,255,.92);
+    outline:none;
+    font-weight:800;
+    letter-spacing:.5px;
+    text-transform: uppercase;
+  }
+  #activationMsg{ font-size:12.5px; color: rgba(255,255,255,.78); }
+  .mutedSmall{ font-size:12px; color: rgba(255,255,255,.68); }
+
+
+  /* App locked until disclaimer accepted */
+  body.locked{ overflow:hidden; }
+  body.locked .wrap{
+    pointer-events:none;
+    user-select:none;
+    filter: blur(2px);
+    opacity: .35;
+  }
+  /* Keep disclaimer overlay clickable */
+  body.locked #disclaimerOverlay{
+    pointer-events:auto;
+    user-select:auto;
+  }
+
+
+/* === UI PREMIUM OVERRIDE === */
+
+/* === FULL PETROL BACKGROUND OVERRIDE === */
+body{
+  margin:0;
+  font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Arial,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(1200px 700px at 20% 10%, #0f3f45 0%, transparent 60%),
+    radial-gradient(1200px 700px at 90% 20%, #0b3a3e 0%, transparent 60%),
+    linear-gradient(135deg,#0f2f35,#082125);
+  overflow-x:hidden;
+}
+
+body{
+  background:
+  radial-gradient(1000px 600px at 10% 0%, #1a0f2e 0%, transparent 60%),
+  radial-gradient(1200px 800px at 100% 0%, #0d2b2b 0%, transparent 60%),
+  linear-gradient(160deg,#0b1020,#05080f);
+}
+
+/* Banner buttons */
+.bbtn{
+  border:1px solid rgba(255,255,255,.14);
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+  color:#ffffff;
+  padding:14px 18px;
+  border-radius:14px;
+  cursor:pointer;
+  font-weight:700;
+  font-size:14px;
+  letter-spacing:.4px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:48px;
+  min-width:190px;
+  transition:all .25s ease;
+  backdrop-filter: blur(8px);
+}
+.bbtn:hover{
+  transform:translateY(-2px);
+  background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
+  box-shadow:0 8px 25px rgba(0,0,0,.35);
+}
+.bbtn.primary{
+  background:linear-gradient(180deg, rgba(136,167,255,.25), rgba(136,167,255,.10));
+  border-color:rgba(136,167,255,.35);
+}
+.bbtn.warn{
+  background:linear-gradient(180deg, rgba(255,204,102,.22), rgba(255,204,102,.10));
+  border-color:rgba(255,204,102,.35);
+}
+
+/* Secondary buttons */
+.btn{
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.05));
+  color:white;
+  padding:11px 16px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:700;
+  font-size:13px;
+  letter-spacing:.3px;
+  transition:all .25s ease;
+}
+.btn:hover{
+  transform:translateY(-1px);
+  background:linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.08));
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
+}
+.btn.ok{
+  background:linear-gradient(180deg, rgba(47,227,140,.30), rgba(47,227,140,.12));
+  border-color:rgba(47,227,140,.45);
+}
+.btn.bad{
+  background:linear-gradient(180deg, rgba(255,91,110,.30), rgba(255,91,110,.12));
+  border-color:rgba(255,91,110,.45);
+}
+
+
+/* === V22 ULTRA PREMIUM SaaS OVERRIDE === */
+:root{
+  --gold:#ffd400;
+  --gold-2:#ffdf3a;
+  --gold-soft:rgba(255,212,0,.18);
+  --cyan:#16d9c7;
+  --cyan-2:#6ff7ea;
+  --cyan-soft:rgba(22,217,199,.18);
+  --petrol-1:#071c21;
+  --petrol-2:#0b2b31;
+  --petrol-3:#0f3a3f;
+  --petrol-4:#11323b;
+  --white-soft:rgba(255,255,255,.88);
+  --line-premium:rgba(255,255,255,.12);
+  --shadow-premium:0 18px 60px rgba(0,0,0,.42);
+}
+
+body{
+  background:
+    radial-gradient(900px 520px at 12% 8%, rgba(22,217,199,.12) 0%, transparent 58%),
+    radial-gradient(900px 520px at 86% 10%, rgba(255,212,0,.10) 0%, transparent 55%),
+    radial-gradient(1200px 800px at 50% 0%, rgba(255,255,255,.05) 0%, transparent 45%),
+    linear-gradient(135deg, #0e2e34 0%, #0b252b 35%, #071b20 100%);
+  min-height:100vh;
+}
+
+/* ultra premium topbar */
+.topbar{
+  position:sticky;
+  top:10px;
+  z-index:50;
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.045));
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  border-radius:22px;
+  box-shadow:
+    0 10px 35px rgba(0,0,0,.28),
+    0 1px 0 rgba(255,255,255,.05) inset,
+    0 0 0 1px rgba(255,255,255,.03);
+  overflow:hidden;
+}
+.topbar::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg, rgba(22,217,199,.10), transparent 35%, transparent 65%, rgba(255,212,0,.10)),
+    linear-gradient(180deg, rgba(255,255,255,.08), transparent 40%);
+}
+.topbar .bd{
+  padding:14px 16px;
+  gap:14px;
+}
+
+.brand{
+  gap:14px;
+}
+.logo{
+  width:52px;
+  height:52px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.16);
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,.22), transparent 38%),
+    linear-gradient(135deg, rgba(22,217,199,.28), rgba(255,212,0,.16), rgba(136,167,255,.20));
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.28),
+    0 0 24px rgba(22,217,199,.12),
+    0 0 20px rgba(255,212,0,.10);
+}
+.title h1{
+  margin:0;
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:.3px;
+  color:#ffffff;
+}
+.title .sub{
+  margin-top:4px;
+  font-size:12.5px;
+  color:rgba(255,255,255,.70);
+}
+
+/* premium banner buttons */
+.bannerBtns{
+  gap:12px;
+}
+.bbtn{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.16);
+  color:#ffffff;
+  padding:14px 18px;
+  border-radius:16px;
+  cursor:pointer;
+  font-weight:800;
+  font-size:14px;
+  letter-spacing:.35px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:50px;
+  min-width:205px;
+  backdrop-filter: blur(10px);
+  transition:
+    transform .22s ease,
+    box-shadow .22s ease,
+    border-color .22s ease,
+    background .22s ease;
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.05);
+}
+.bbtn::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,.13) 45%, transparent 70%);
+  transform:translateX(-120%);
+  transition:transform .65s ease;
+  pointer-events:none;
+}
+.bbtn:hover::before{
+  transform:translateX(120%);
+}
+.bbtn:hover{
+  transform:translateY(-2px);
+  box-shadow:
+    0 14px 30px rgba(0,0,0,.30),
+    0 0 0 1px rgba(255,255,255,.03) inset;
+}
+.bbtn.primary{
+  background:linear-gradient(180deg, rgba(22,217,199,.24), rgba(22,217,199,.08));
+  border-color:rgba(22,217,199,.34);
+  box-shadow:
+    0 12px 26px rgba(0,0,0,.24),
+    0 0 24px rgba(22,217,199,.12);
+}
+.bbtn.primary:hover{
+  border-color:rgba(111,247,234,.42);
+  box-shadow:
+    0 16px 34px rgba(0,0,0,.32),
+    0 0 28px rgba(22,217,199,.18);
+}
+.bbtn.warn{
+  background:linear-gradient(180deg, rgba(255,212,0,.24), rgba(255,212,0,.08));
+  border-color:rgba(255,212,0,.34);
+  box-shadow:
+    0 12px 26px rgba(0,0,0,.24),
+    0 0 24px rgba(255,212,0,.10);
+}
+.bbtn.warn:hover{
+  border-color:rgba(255,223,58,.42);
+  box-shadow:
+    0 16px 34px rgba(0,0,0,.32),
+    0 0 28px rgba(255,212,0,.16);
+}
+.tag{
+  font-size:11px;
+  font-weight:900;
+  color:#ffffff;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(0,0,0,.26);
+  padding:6px 9px;
+  border-radius:999px;
+  white-space:nowrap;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+/* visual card & light */
+.card.visualCard{
+  position:relative;
+  margin-top:14px;
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.36),
+    inset 0 1px 0 rgba(255,255,255,.05);
+  overflow:hidden;
+}
+.card.visualCard::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  pointer-events:none;
+  background:
+    radial-gradient(700px 160px at 50% -5%, rgba(255,255,255,.08), transparent 55%),
+    linear-gradient(90deg, rgba(22,217,199,.08), transparent 45%, transparent 55%, rgba(255,212,0,.08));
+}
+.visualTop{
+  padding:14px 16px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015)),
+    linear-gradient(90deg, rgba(22,217,199,.05), transparent 35%, transparent 65%, rgba(255,212,0,.05));
+}
+.note{
+  color:rgba(255,255,255,.76);
+}
+.note b{
+  color:#ffffff;
+}
+
+/* secondary action buttons */
+.btn{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.14);
+  color:#ffffff;
+  padding:11px 16px;
+  border-radius:13px;
+  cursor:pointer;
+  font-weight:800;
+  font-size:13px;
+  letter-spacing:.3px;
+  transition:
+    transform .22s ease,
+    box-shadow .22s ease,
+    border-color .22s ease,
+    background .22s ease;
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+.btn:hover{
+  transform:translateY(-1px);
+  box-shadow:
+    0 12px 24px rgba(0,0,0,.26),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+.btn.ok{
+  background:linear-gradient(180deg, rgba(22,217,199,.28), rgba(22,217,199,.10));
+  border-color:rgba(22,217,199,.35);
+}
+.btn.ok:hover{
+  border-color:rgba(111,247,234,.42);
+  box-shadow:
+    0 12px 24px rgba(0,0,0,.24),
+    0 0 22px rgba(22,217,199,.14);
+}
+.btn.bad{
+  background:linear-gradient(180deg, rgba(255,212,0,.24), rgba(255,212,0,.09));
+  border-color:rgba(255,212,0,.32);
+  color:#fffef4;
+}
+.btn.bad:hover{
+  border-color:rgba(255,223,58,.42);
+  box-shadow:
+    0 12px 24px rgba(0,0,0,.24),
+    0 0 22px rgba(255,212,0,.14);
+}
+
+/* pills toggles */
+.tbtn{
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+  color:rgba(255,255,255,.92);
+  padding:7px 11px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12px;
+  transition:all .22s ease;
+}
+.tbtn:hover{
+  background:linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.05));
+}
+.tbtn.on{
+  background:linear-gradient(180deg, rgba(22,217,199,.20), rgba(22,217,199,.08));
+  border-color:rgba(22,217,199,.32);
+  box-shadow:0 0 18px rgba(22,217,199,.10);
+}
+
+/* canvas */
+canvas{
+  background:
+    radial-gradient(900px 280px at 50% 0%, rgba(255,255,255,.05), transparent 55%),
+    rgba(7,18,22,.74);
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+/* overlay info */
+.overlayInfo{
+  background:rgba(6,16,20,.42);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:16px;
+  padding:11px 12px;
+  backdrop-filter: blur(14px);
+  box-shadow:0 10px 30px rgba(0,0,0,.20);
+}
+.overlayInfo b{
+  color:var(--gold);
+}
+
+/* modal premium */
+.modal{
+  width:min(1180px,96vw);
+  max-height:min(94vh,980px);
+  border:1px solid rgba(255,255,255,.14);
+  background:
+    linear-gradient(180deg, rgba(10,20,24,.94), rgba(8,16,20,.92));
+  border-radius:22px;
+  box-shadow:
+    0 24px 70px rgba(0,0,0,.46),
+    0 0 0 1px rgba(255,255,255,.03) inset;
+  display:flex;
+  flex-direction:column;
+}
+.modalHead{
+  padding:13px 16px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015)),
+    linear-gradient(90deg, rgba(22,217,199,.05), transparent 40%, rgba(255,212,0,.05));
+  position:sticky;
+  top:0;
+  z-index:6;
+  flex:0 0 auto;
+}
+.modalTitle{
+  font-weight:900;
+  color:#ffffff;
+}
+.xbtn{
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+  border-radius:13px;
+  padding:9px 12px;
+  font-weight:800;
+  color:#ffffff;
+}
+.xbtn:hover{
+  box-shadow:0 10px 22px rgba(0,0,0,.24);
+}
+
+/* result cards */
+.kv{
+  border:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025));
+  border-radius:16px;
+  padding:11px 13px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.kv span{
+  color:rgba(255,255,255,.62);
+}
+.kv b{
+  color:#ffffff;
+}
+
+/* live chip */
+.liveBadge, .chip{
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.dotLive.on{
+  box-shadow:0 0 14px rgba(22,217,199,.75);
+}
+
+/* inputs */
+select, input[type="number"], input[type="url"], #activationKey{
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+  color:#ffffff;
+  font-weight:800;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+}
+select:focus, input[type="number"]:focus, input[type="url"]:focus, #activationKey:focus{
+  border-color:rgba(22,217,199,.36);
+  box-shadow:
+    0 0 0 3px rgba(22,217,199,.10),
+    inset 0 1px 0 rgba(255,255,255,.03);
+  outline:none;
+}
+
+/* responsive polish */
+@media (max-width:1100px){
+  .topbar{ top:6px; }
+  .bbtn{ min-width:180px; }
+}
+
+
+/* === Added premium utilities v22+ === */
+.meter{position:relative;height:12px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid rgba(255,255,255,.10);flex:1 1 auto;min-width:120px}
+.meter i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg, rgba(22,217,199,.92), rgba(255,212,0,.96));box-shadow:0 0 18px rgba(22,217,199,.18);}
+.probsBox{margin-top:12px;border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));}
+.probTitle{font-weight:900;margin-bottom:10px;color:#fff}
+.probRow,.gaugeWrap{display:flex;align-items:center;gap:10px;margin-top:8px}
+.probRow span{width:76px;font-size:12px;font-weight:800;color:rgba(255,255,255,.85)}
+.probRow b,.gaugeWrap b{min-width:52px;text-align:right;font-size:12px}
+.historyList{display:flex;flex-direction:column;gap:10px;max-height:min(60vh,680px);overflow:auto;padding-right:4px}
+.readWrap{display:block}
+.readHero{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.readText{font-size:13px;line-height:1.6;color:rgba(255,255,255,.88)}
+.readBlock{display:block;font-family:inherit !important;font-size:13px !important;line-height:1.65;margin-top:6px;white-space:pre-wrap}
+.histItem{border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));}
+.histTop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.histMeta{font-size:12px;color:rgba(255,255,255,.72)}
+.canvasWrap{cursor:grab;}
+.canvasWrap.dragging{cursor:grabbing;}
+.zoomBadge{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(0,0,0,.22);font-size:12px;font-weight:800;color:#fff}
+@media print{body *{visibility:hidden !important;} #printSheet, #printSheet *{visibility:visible !important;} #printSheet{position:absolute;left:0;top:0;width:100%;padding:20px;color:#000;background:#fff;font-family:Arial,sans-serif;} }
+
+/* === Compact header requested === */
+.topbar .bd{justify-content:flex-start; align-items:center;}
+.brand{flex:0 0 auto; min-width:auto; margin-right:8px;}
+.bannerBtns{justify-content:flex-start; flex:0 0 auto; gap:8px;}
+.bbtn{min-width:150px; min-height:42px; padding:10px 14px; border-radius:13px; font-size:13px; gap:8px;}
+.tag{padding:5px 8px; font-size:10.5px;}
+.title .sub:empty{display:none;}
+@media (max-width:1100px){
+  .brand{flex:1 1 100%;}
+  .bannerBtns{width:100%;}
+  .bbtn{min-width:135px;}
+}
+
+
+@media (max-height:760px){
+  .modal{max-height:96vh;}
+  .modalBody{max-height:calc(96vh - 74px);}
+}
+@media (max-width:760px){
+  .modal{width:min(1180px,98vw); border-radius:18px;}
+  .modalBody{padding:12px;}
+  .popupActionBar{justify-content:stretch;}
+  .popupActionBar .btn{flex:1 1 160px;}
+}
+
+
+
+/* === V24 ULTRA COMPACT NAVBAR / TradingView style === */
+.topbar{top:6px;border-radius:16px;}
+.topbar .bd{padding:8px 10px !important;gap:8px !important;justify-content:space-between;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;}
+.topbar .bd::-webkit-scrollbar{height:6px;}
+.brand{gap:10px !important;margin-right:4px !important;min-width:auto !important;flex:0 0 auto !important;}
+.logo{width:38px !important;height:38px !important;border-radius:12px !important;}
+.title h1{font-size:14px !important;white-space:nowrap;}
+.title .sub{display:none !important;}
+.bannerBtns{gap:6px !important;flex-wrap:nowrap !important;width:auto !important;justify-content:flex-start !important;}
+.bbtn{min-width:auto !important;min-height:32px !important;padding:6px 10px !important;border-radius:10px !important;font-size:11px !important;gap:6px !important;letter-spacing:.1px !important;box-shadow:0 6px 16px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.05) !important;white-space:nowrap;}
+.bbtn span:first-child{overflow:hidden;text-overflow:ellipsis;max-width:140px;}
+.tag{padding:3px 6px !important;font-size:9px !important;line-height:1.1 !important;}
+.wrap{width:min(2000px, calc(100vw - 16px)) !important;margin:8px auto 14px !important;}
+@media (max-width:1100px){
+  .topbar .bd{flex-wrap:wrap !important;overflow-x:visible;}
+  .brand{flex:1 1 100% !important;}
+  .bannerBtns{width:100% !important;overflow-x:auto;}
+  .bbtn{padding:6px 9px !important;font-size:10px !important;}
+  .bbtn span:first-child{max-width:none;}
+}
+
+/* === V26 SUPPORT ULTRA PRO === */
+.supportFab{
+  position:absolute;
+  right:18px;
+  bottom:18px;
+  z-index:12;
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  padding:11px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
+  background:linear-gradient(180deg, rgba(22,217,199,.34), rgba(22,217,199,.14));
+  color:#fff;
+  font-weight:900;
+  font-size:12px;
+  letter-spacing:.2px;
+  cursor:pointer;
+  box-shadow:0 14px 30px rgba(0,0,0,.36), 0 0 24px rgba(22,217,199,.16);
+  backdrop-filter:blur(10px);
+  transition:transform .22s ease, box-shadow .22s ease, background .22s ease;
+}
+.supportFab:hover{transform:translateY(-2px);box-shadow:0 18px 34px rgba(0,0,0,.42),0 0 28px rgba(22,217,199,.22);background:linear-gradient(180deg, rgba(22,217,199,.48), rgba(22,217,199,.20));}
+.supportFab .icon{
+  width:28px;height:28px;border-radius:999px;display:grid;place-items:center;
+  background:rgba(255,255,255,.14);font-size:15px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+.supportGrid{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;margin-top:12px}
+@media(max-width:900px){.supportGrid{grid-template-columns:1fr;}}
+.supportPanel,.supportChatBox,.supportMiniCard{
+  border:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025));
+  border-radius:18px;
+  padding:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.supportHeadTitle{font-weight:900;font-size:14px;color:#fff}
+.supportSub{font-size:12px;color:rgba(255,255,255,.72);line-height:1.5}
+.supportActionGrid{display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:10px;margin-top:12px}
+@media(max-width:640px){.supportActionGrid{grid-template-columns:1fr;}}
+.supportActionBtn{
+  text-align:left;
+  min-height:62px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:5px;
+}
+.supportActionBtn small{display:block;color:rgba(255,255,255,.68);font-size:11px;font-weight:700;line-height:1.35}
+.chatLog{
+  height:min(42vh,360px);overflow:auto;padding-right:4px;display:flex;flex-direction:column;gap:10px;
+}
+.chatMsg{max-width:88%;padding:10px 12px;border-radius:16px;font-size:12.5px;line-height:1.5;border:1px solid rgba(255,255,255,.10)}
+.chatMsg.bot{align-self:flex-start;background:rgba(255,255,255,.07)}
+.chatMsg.user{align-self:flex-end;background:rgba(22,217,199,.16);border-color:rgba(22,217,199,.22)}
+.chatComposer{display:flex;gap:10px;margin-top:12px;align-items:center}
+.chatComposer input{
+  flex:1 1 auto;min-width:160px;padding:11px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.08);color:#fff;font-weight:700;outline:none;
+}
+.supportStatus{
+  margin-top:12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(22,217,199,.18);
+  background:linear-gradient(180deg, rgba(22,217,199,.12), rgba(255,255,255,.03));font-size:12px;line-height:1.55;color:rgba(255,255,255,.88)
+}
+.sosBtn{background:linear-gradient(180deg, rgba(255,91,110,.34), rgba(255,91,110,.14)) !important;border-color:rgba(255,91,110,.36) !important;}
+
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- TOP BANNER (menu-like) -->
+  <section class="topbar">
+    <div class="bd">
+      <div class="brand">
+        <div class="logo"></div>
+        <div class="title">
+          <h1>Forex Capture Analyzer Premium — Vrai système temps réel V28</h1>
+          <div class="sub"></div>
+        </div>
+      </div>
+
+      
+      <div class="bannerBtns">
+        <button class="bbtn primary" id="btnOpenLive">
+          <span>LIVE + Réglage bougies</span>
+          <span class="tag" id="liveTag">LIVE: OFF</span>
+        </button>
+
+        <button class="bbtn warn" id="btnOpenResults">
+          <span>Résultats</span>
+          <span class="tag mono" id="miniConclusion">—</span>
+        </button>
+        <button class="bbtn" id="btnOpenGuide">
+          <span>Guide</span>
+          <span class="tag">Aide</span>
+        </button>
+
+        <button class="bbtn" id="btnOpenDashboard">
+          <span>Dashboard</span>
+          <span class="tag" id="historyCountTag">0 analyse</span>
+        </button>
+</div>
+
+    </div>
+  </section>
+
+  <!-- VISUAL ZONE + CONTROLE -->
+  <section class="card visualCard">
+    <input id="fileInput" type="file" accept=".png,.jpg,.jpeg,.webp" />
+    <div class="visualTop">
+      <div class="left">
+        <div class="note"><b>Contrôle — Upload / LIVE / Analyse</b></div>
+        <div class="note" id="statusLine">Dépose une capture sur le canvas, ou clique “Téléverser”, puis “Analyser”.</div>
+        
+      </div>
+      <div class="right row">
+        <button class="btn ok" id="btnPick">Téléverser</button>
+        <button class="btn ok" id="btnAnalyze">Analyser</button>
+        <button class="btn" id="btnFit">Ajuster</button>
+        <button class="btn bad" id="btnReset">Reset</button>
+        <button class="btn" id="btnHistory">Historique</button>
+        <button class="btn" id="btnExport">Exporter</button>
+      
+        <div class="togglesInline" id="overlayToggles" title="Afficher / masquer les overlays">
+          <button class="tbtn on" data-tg="trend">Trendline</button>
+          <button class="tbtn on" data-tg="zones">Zones</button>
+          <button class="tbtn on" data-tg="limit">Limit</button>
+          <button class="tbtn on" data-tg="tp">TP</button>
+          <button class="tbtn on" data-tg="bands">Bands</button>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="canvasWrap" id="wrapCanvas">
+      <canvas id="cv"></canvas>
+      <div class="overlayInfo">
+        <b>LIMIT</b> (sortie si défavorable) + <b>TP</b> (take profit) sont des <b>zones visuelles</b> (proxy), pas des prix exacts.
+      </div>
+    </div>
+  </section>
+
+  <button class="supportFab" id="btnSupportFab" type="button" title="Support Premium V28">
+    <span class="icon">💬</span>
+    <span>Support V26</span>
+  </button>
+</div>
+
+<!-- MODAL -->
+<div class="modalBack" id="modalBack" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modalHead">
+      <div class="modalTitle" id="modalTitle">—</div>
+      <div class="row">
+        <button class="xbtn" id="btnClose">Fermer</button>
+      </div>
+    </div>
+    <div class="modalBody" id="modalBody"><div id="licenseStatus" class="chip" title="Statut de licence">Expire dans…</div>
+</div>
+  </div>
+</div>
+
+<!-- Templates -->
+
+<template id="tpl_history">
+  <div class="row" style="justify-content:space-between">
+    <div class="note"><b>Historique des analyses</b></div>
+    <button class="btn small bad" id="btnClearHistory">Vider</button>
+  </div>
+  <div id="historyList" class="historyList" style="margin-top:12px"></div>
+</template>
+
+<template id="tpl_dashboard">
+  <div class="row" style="justify-content:space-between; gap:10px; flex-wrap:wrap">
+    <div class="note"><b>Dashboard licence & activité en temps réel</b></div>
+    <div class="row" style="gap:10px; flex-wrap:wrap">
+      <div class="chip" id="dashLastUpdate">—</div>
+      <button class="btn bad" id="btnDashboardLogout" type="button">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="popupSectionTitle" style="margin-top:12px">Suivi global de votre licence</div>
+  <div class="grid" style="margin-top:12px">
+    <div class="kv"><span>Clé licence</span><b id="lic_key_short">—</b></div>
+    <div class="kv"><span>Plan</span><b id="lic_plan">—</b></div>
+    <div class="kv"><span>Statut</span><b id="lic_status">—</b></div>
+    <div class="kv"><span>Mode</span><b id="lic_mode">—</b></div>
+    <div class="kv"><span>Date d’activation</span><b id="lic_activated">—</b></div>
+    <div class="kv"><span>Date d’expiration</span><b id="lic_expiration">—</b></div>
+    <div class="kv"><span>Durée restante</span><b id="lic_remaining_days">—</b></div>
+    <div class="kv"><span>Dernière activité</span><b id="lic_last_seen">—</b></div>
+  </div>
+
+  <div class="popupDivider"></div>
+  <div class="popupSectionTitle">Suivi des captures / analyses</div>
+  <div class="grid" style="margin-top:12px">
+    <div class="kv"><span>Captures achetées</span><b id="lic_purchased">0</b></div>
+    <div class="kv"><span>Captures utilisées</span><b id="lic_used">0</b></div>
+    <div class="kv"><span>Captures restantes</span><b id="lic_remaining">0</b></div>
+    <div class="kv"><span>Sessions ouvertes</span><b id="lic_sessions">0</b></div>
+  </div>
+
+  <div class="popupDivider"></div>
+  <div class="popupSectionTitle">Résumé d’activité locale</div>
+  <div class="grid" style="margin-top:12px">
+    <div class="kv"><span>Total analyses</span><b id="d_total">0</b></div>
+    <div class="kv"><span>ACHAT</span><b id="d_buy">0</b></div>
+    <div class="kv"><span>VENTE</span><b id="d_sell">0</b></div>
+    <div class="kv"><span>ATTENTE</span><b id="d_wait">0</b></div>
+    <div class="kv"><span>Score moyen</span><b id="d_avg_score">0</b></div>
+    <div class="kv"><span>Risque moyen</span><b id="d_avg_risk">0</b></div>
+    <div class="kv"><span>Confiance moyenne</span><b id="d_avg_conf">0%</b></div>
+    <div class="kv"><span>Symbole fréquent</span><b id="d_symbol">—</b></div>
+  </div>
+  <div id="lic_warning_box" class="note" style="margin-top:12px;border:1px solid rgba(255,255,255,.10);padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04)">La partie licence vient du serveur. La partie activité locale est alimentée automatiquement par les analyses sauvegardées dans votre navigateur.</div>
+</template>
+
+<template id="tpl_read_analysis">
+  <div class="readWrap">
+    <div class="readHero">
+      <div>
+        <div class="note"><b>Lecture détaillée du marché</b></div>
+        <div class="note" id="readHeaderLine">Aucune analyse disponible.</div>
+      </div>
+      <div class="chip" id="readDecisionBadge">—</div>
+    </div>
+
+    <div class="grid" style="margin-top:12px">
+      <div class="kv"><span>Probabilité Achat</span><b id="ra_prob_buy">0%</b></div>
+      <div class="kv"><span>Probabilité Vente</span><b id="ra_prob_sell">0%</b></div>
+      <div class="kv"><span>Probabilité Attente</span><b id="ra_prob_wait">0%</b></div>
+      <div class="kv"><span>Projection marché</span><b id="ra_projection_bias">—</b></div>
+    </div>
+
+    <div class="callout" style="margin-top:12px">
+      <div class="note"><b>Notification Trader</b></div>
+      <div id="ra_notification" class="readText">Téléversez d'abord une capture puis cliquez sur Analyser.</div>
+    </div>
+
+    <div class="grid" style="margin-top:12px">
+      <div class="kv" style="grid-column: span 2"><span>Lecture détaillée</span><b id="ra_market_reading" class="readBlock">—</b></div>
+      <div class="kv" style="grid-column: span 2"><span>Projection probable</span><b id="ra_projection" class="readBlock">—</b></div>
+      <div class="kv" style="grid-column: span 2"><span>Consignes au trader</span><b id="ra_instructions" class="readBlock">—</b></div>
+      <div class="kv" style="grid-column: span 2"><span>Cas similaires déjà observés</span><b id="ra_examples" class="readBlock">—</b></div>
+    </div>
+
+    <div class="probsBox" style="margin-top:12px">
+      <div class="probTitle">Synthèse vocale textuelle</div>
+      <div id="ra_summary" class="readText">—</div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl_live">
+  <div class="row" style="justify-content:space-between">
+    <div class="note"><b>LIVE + Réglage bougies</b></div>
+    <span class="liveBadge"><span class="dotLive" id="dotLive"></span><span id="liveStatus">LIVE: OFF</span></span>
+  </div>
+
+  <div class="row" style="margin-top:10px">
+    <input id="tradeUrl" type="url" placeholder="Lien graphique (TradingView/MT5 Web) : https://..." spellcheck="false" />
+    <button class="btn small" id="btnOpenTrade">Ouvrir</button>
+  </div>
+
+  <div class="row" style="margin-top:10px">
+    <button class="btn small ok" id="btnLiveStart">Connecter LIVE</button>
+    <button class="btn small bad" id="btnLiveStop">Arrêter LIVE</button>
+  </div>
+
+  <div class="row" style="margin-top:12px">
+    <div style="flex:1 1 160px">
+      <div class="note" style="margin:0 0 6px"><b>Timeframe</b></div>
+      <select id="tfSelect" style="width:100%">
+        <option value="AUTO" selected>AUTO</option>
+        <option value="D1">D1</option>
+        <option value="H4">H4</option>
+        <option value="H1">H1</option>
+        <option value="M15">M15</option>
+      </select>
+    </div>
+
+    <div style="flex:1 1 170px">
+      <div class="note" style="margin:0 0 6px"><b>Bougies visibles</b></div>
+      <input id="candlesVisible" type="number" min="30" step="10" value="300" style="width:100%"/>
+    </div>
+
+    <div style="flex:1 1 170px">
+      <div class="note" style="margin:0 0 6px"><b>Bougies nécessaires</b></div>
+      <div class="kv" style="min-height:auto">
+        <span>Minimum</span>
+        <b id="candlesNeed">—</b>
+      </div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:10px">
+    Règles PRO : <b>GO</b> seulement si <b>Score ≥ 70</b>. Si <b>Risque ≥ 60</b> ou Trend = <b>RANGE</b> → <b>ATTENTE</b>.
+  </div>
+</template>
+
+<template id="tpl_results">
+  <div class="row" style="justify-content:space-between">
+    <div class="note"><b>Résultats</b></div>
+    <div class="note mono">v23 Ultra</div>
+  </div>
+
+  <div class="grid" style="margin-top:10px">
+    <div class="kv"><span>Décision</span><b id="r_decision">—</b></div>
+    <div class="kv"><span>Trend</span><b id="r_trend">—</b></div>
+    <div class="kv"><span>Confiance</span><b id="r_conf">—</b></div>
+    <div class="kv"><span>Bruit</span><b id="r_noise">—</b></div>
+
+    <div class="kv"><span>R:R (proxy)</span><b id="r_rr">—</b></div>
+    <div class="kv"><span>Risque (0–100)</span><b id="r_risk">—</b></div>
+    <div class="kv"><span>Score (0–100)</span><b id="r_score">—</b></div>
+    <div class="kv"><span>Timeframe</span><b id="r_tf">—</b></div>
+
+    <div class="kv" style="grid-column: span 2"><span>Niveau d'entrée</span><b id="r_entryMode">—</b></div>
+    <div class="kv" style="grid-column: span 2"><span>Zone recommandée</span><b id="r_zoneRec">—</b></div>
+  </div>
+
+  <div class="probsBox">
+    <div class="probTitle">Probabilités décisionnelles</div>
+    <div class="probRow"><span>ACHAT</span><div class="meter"><i id="p_buy_bar" style="width:0%"></i></div><b id="p_buy">0%</b></div>
+    <div class="probRow"><span>VENTE</span><div class="meter"><i id="p_sell_bar" style="width:0%"></i></div><b id="p_sell">0%</b></div>
+    <div class="probRow"><span>ATTENTE</span><div class="meter"><i id="p_wait_bar" style="width:0%"></i></div><b id="p_wait">0%</b></div>
+  </div>
+
+  <div class="grid gaugeGrid" style="margin-top:10px">
+    <div class="kv"><span>Jauge confiance</span><div class="gaugeWrap"><div class="meter"><i id="g_conf" style="width:0%"></i></div><b id="g_conf_txt">0%</b></div></div>
+    <div class="kv"><span>Jauge risque</span><div class="gaugeWrap"><div class="meter"><i id="g_risk" style="width:0%"></i></div><b id="g_risk_txt">0%</b></div></div>
+    <div class="kv"><span>Jauge score</span><div class="gaugeWrap"><div class="meter"><i id="g_score" style="width:0%"></i></div><b id="g_score_txt">0%</b></div></div>
+    <div class="kv"><span>Qualité lecture</span><div class="gaugeWrap"><div class="meter"><i id="g_read" style="width:0%"></i></div><b id="g_read_txt">0%</b></div></div>
+  </div>
+
+  <div class="grid" style="margin-top:10px">
+    <div class="kv"><span>Pullback</span><b id="r_pb">—</b></div>
+    <div class="kv"><span>Zone pullback</span><b id="r_pbZone">—</b></div>
+    <div class="kv"><span>Structure</span><b id="r_structure">—</b></div>
+    <div class="kv"><span>Cassure</span><b id="r_brk">—</b></div>
+    <div class="kv"><span>Retest</span><b id="r_retest">—</b></div>
+    <div class="kv"><span>Confirmation PB</span><b id="r_pbConf">—</b></div>
+    <div class="kv"><span>Symbole</span><b id="r_symbol">—</b></div>
+    <div class="kv"><span>Lecture bougies</span><b id="r_candles">—</b></div>
+    <div class="kv" style="grid-column: span 4"><span>Zone (Demand/Supply)</span><b id="r_dsZone">—</b></div>
+  </div>
+
+  <div class="note" id="r_reason" style="margin-top:10px">Téléverse puis clique <b>Analyser</b>.</div>
+
+  <div class="kv" style="margin-top:10px">
+    <span>Conclusion (copiable)</span>
+    <b id="r_conclusion">—</b>
+  </div>
+
+  <div class="popupDivider"></div>
+  <div class="popupSectionTitle">Analyse narrative du marché</div>
+
+  <div class="grid" style="margin-top:10px">
+    <div class="kv"><span>Probabilité Achat</span><b id="ra_prob_buy">0%</b></div>
+    <div class="kv"><span>Probabilité Vente</span><b id="ra_prob_sell">0%</b></div>
+    <div class="kv"><span>Probabilité Attente</span><b id="ra_prob_wait">0%</b></div>
+    <div class="kv"><span>Projection marché</span><b id="ra_projection_bias">—</b></div>
+    <div class="kv" style="grid-column: span 4"><span>Notification Trader</span><b id="ra_notification" class="readBlock">Téléversez d'abord une capture puis cliquez sur Analyser.</b></div>
+    <div class="kv" style="grid-column: span 2"><span>Lecture détaillée</span><b id="ra_market_reading" class="readBlock">—</b></div>
+    <div class="kv" style="grid-column: span 2"><span>Projection probable</span><b id="ra_projection" class="readBlock">—</b></div>
+    <div class="kv" style="grid-column: span 2"><span>Consignes au trader</span><b id="ra_instructions" class="readBlock">—</b></div>
+    <div class="kv" style="grid-column: span 2"><span>Cas similaires observés</span><b id="ra_examples" class="readBlock">—</b></div>
+  </div>
+
+  <div class="probsBox" style="margin-top:12px">
+    <div class="probTitle">Synthèse stratégique</div>
+    <div id="ra_summary" class="readText">—</div>
+  </div>
+
+  <div class="popupActionBar">
+    <button class="btn" id="btnCopyNarrative">Copier l’analyse</button>
+    <button class="btn ok" id="btnExportNarrative">Exporter</button>
+    <button class="btn bad" id="btnCloseResults">Fermer</button>
+  </div>
+</template>
+
+<script src="config.js"></script>
+<script>
+/* =========================
+  v17 Single-file
+  - Top banner: only LIVE + Résultats (popups)
+  - Below: visual zone (canvas) + control buttons (Téléverser / Analyser / Ajuster / Reset)
+========================= */
+
+const $ = (id)=>document.getElementById(id);
+
+/* ---------- Modal ---------- */
+const modalBack = $("modalBack");
+const modalTitle = $("modalTitle");
+const modalBody = $("modalBody");
+
+function closeModal(){
+  modalBack.classList.remove("show");
+  modalBack.setAttribute("aria-hidden","true");
+  modalTitle.textContent="—";
+  modalBody.innerHTML="";
+}
+$("btnClose").addEventListener("click", closeModal);
+modalBack.addEventListener("click", (e)=>{ if(e.target===modalBack) closeModal(); });
+document.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeModal(); });
+
+function openModal(title, templateId){
+  const tpl = document.getElementById(templateId);
+  if(!tpl) return;
+  modalTitle.textContent = title;
+  modalBody.innerHTML="";
+  modalBody.appendChild(tpl.content.cloneNode(true));
+  modalBack.classList.add("show");
+  modalBack.setAttribute("aria-hidden","false");
+  wireModal(templateId);
+  if(templateId==="tpl_results"){
+    renderResultsToModal();
+    renderReadAnalysisModal();
+    bindResultsActionBar();
+  }
+  if(templateId==="tpl_live") refreshLiveBadge();
+}
+$("btnOpenLive").addEventListener("click", ()=> openModal("LIVE + Réglage bougies", "tpl_live"));
+$("btnOpenResults").addEventListener("click", ()=> openModal("Résultats Pro", "tpl_results"));
+$("btnSupportFab")?.addEventListener("click", ()=> openModal("Support Premium V28", "tpl_support_v26"));
+
+/* ---------- Guide popup + WhatsApp support ---------- */
+const SUPPORT_WA = "+2250777041790";
+function waLink(text){
+  const msg = encodeURIComponent(text || "Bonjour, j’ai besoin d’aide sur Forex Capture Analyzer PRO.");
+  const phone = SUPPORT_WA.replace(/[^\d]/g,"");
+  return "https://wa.me/" + phone + "?text=" + msg;
+}
+const btnGuide = document.getElementById("btnOpenGuide");
+if(btnGuide){
+  btnGuide.addEventListener("click", ()=> openModal("Guide d’utilisation", "tpl_guide"));
+}
+
+
+/* Hook: when Guide modal is open, set WhatsApp link */
+(function hookGuideWhatsApp(){
+  const _openModal = openModal;
+  window.openModal = function(title, templateId){
+    _openModal(title, templateId);
+    if(templateId==="tpl_guide"){
+      const b = document.getElementById("btnWhatsAppSupport");
+      if(b){
+        b.href = waLink("Bonjour Support, je veux de l’aide sur Forex Capture Analyzer PRO (v19).");
+      }
+    }
+  }
+})();
+
+
+/* ---------- Upload ---------- */
+const fileInput = $("fileInput");
+$("btnPick").addEventListener("click", ()=> fileInput.click());
+fileInput.addEventListener("change", async (e)=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  if(!f.type || !f.type.startsWith("image/")){
+    alert("Veuillez choisir une image (PNG/JPG/WEBP).");
+    return;
+  }
+  stopLive();
+  await loadFile(f);
+  try{ fileInput.value=""; }catch(_){}
+});
+
+/* Drag & drop */
+document.body.addEventListener("dragover",(e)=>{ e.preventDefault(); });
+document.body.addEventListener("drop", async (e)=>{
+  e.preventDefault();
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if(!f) return;
+  if(!f.type || !f.type.startsWith("image/")){
+    alert("Veuillez choisir une image (PNG/JPG/WEBP).");
+    return;
+  }
+  stopLive();
+  await loadFile(f);
+});
+
+/* ---------- Canvas ---------- */
+const wrap = $("wrapCanvas");
+const cv = $("cv");
+const ctx = cv.getContext("2d");
+let dpr = window.devicePixelRatio || 1;
+
+let IMG = new Image();
+let HAS_IMG = false;
+
+let LAST = null;      // overlays data
+let LAST_RES = null;  // results data for modal + mini tag
+
+let overlays = { trend:true, zones:true, limit:true, tp:true, bands:true };
+
+/* ---------- Overlay toggles (inline) ---------- */
+function syncToggleUI(){
+  const wrapT = document.getElementById("overlayToggles");
+  if(!wrapT) return;
+  wrapT.querySelectorAll("[data-tg]").forEach(btn=>{
+    const k = btn.getAttribute("data-tg");
+    btn.classList.toggle("on", !!overlays[k]);
+  });
+}
+(function wireOverlayToggles(){
+  const wrapT = document.getElementById("overlayToggles");
+  if(!wrapT) return;
+  wrapT.querySelectorAll("[data-tg]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const k = btn.getAttribute("data-tg");
+      if(!k || !(k in overlays)) return;
+      overlays[k] = !overlays[k];
+      btn.classList.toggle("on", !!overlays[k]);
+      draw();
+    });
+  });
+  syncToggleUI();
+})();
+
+
+function resizeCanvas(){
+  const inner = wrap.querySelector(".canvasWrap") || wrap;
+  const W = inner.clientWidth;
+  const H = inner.clientHeight;
+  dpr = window.devicePixelRatio || 1;
+  cv.width = Math.round(W*dpr);
+  cv.height = Math.round(H*dpr);
+  cv.style.width = W+"px";
+  cv.style.height = H+"px";
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  draw();
+}
+window.addEventListener("resize", resizeCanvas);
+$("btnFit").addEventListener("click", resizeCanvas);
+
+function drawGrid(W,H){
+  ctx.clearRect(0,0,W,H);
+  ctx.save();
+  ctx.strokeStyle="rgba(255,255,255,.06)";
+  ctx.lineWidth=1;
+  for(let i=0;i<=6;i++){
+    const y=(H/6)*i; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+  }
+  for(let i=0;i<=10;i++){
+    const x=(W/10)*i; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function computeFit(imgW, imgH, W, H){
+  const sc = Math.min(W/imgW, H/imgH);
+  return { scale: sc, x: (W - imgW*sc)/2, y: (H - imgH*sc)/2 };
+}
+function imgToCanvas(ix, iy, fit){
+  return { x: fit.x + ix*fit.scale, y: fit.y + iy*fit.scale };
+}
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+
+function drawBands(bands, fit){
+  if(!bands) return;
+  ctx.save();
+  ctx.strokeStyle="rgba(136,167,255,.35)";
+  ctx.lineWidth=2;
+  for(const b of bands){
+    const x=fit.x + b.x*fit.scale;
+    const y=fit.y + b.y*fit.scale;
+    const w=b.w*fit.scale;
+    const h=b.h*fit.scale;
+    ctx.strokeRect(x,y,w,h);
+  }
+  ctx.restore();
+}
+function drawTrendLine(model, fit){
+  const {m,b,startX,endX,trend} = model;
+  const x1=startX, x2=endX;
+  const y1=m*x1+b, y2=m*x2+b;
+  const p1=imgToCanvas(x1,y1,fit), p2=imgToCanvas(x2,y2,fit);
+  ctx.save();
+  ctx.lineWidth=3;
+  ctx.strokeStyle="rgba(136,167,255,.90)";
+  ctx.setLineDash([10,7]);
+  ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle="rgba(136,167,255,.95)";
+  ctx.font="12px system-ui";
+  ctx.fillText("TRENDLINE ("+trend+")", Math.max(10,p2.x-170), Math.max(16,p2.y-10));
+  ctx.restore();
+}
+function drawEntry(entry, fit){
+  const p=imgToCanvas(entry.ix, entry.iy, fit);
+  let color="rgba(255,204,102,.95)", label="ENTRY";
+  if(entry.decision==="ACHAT"){ color="rgba(47,227,140,.95)"; label="ENTRY ACHAT"; }
+  if(entry.decision==="VENTE"){ color="rgba(255,91,110,.95)"; label="ENTRY VENTE"; }
+  ctx.save();
+  ctx.fillStyle=color;
+  ctx.strokeStyle="rgba(0,0,0,.45)";
+  ctx.lineWidth=2;
+  ctx.globalAlpha=0.25;
+  ctx.beginPath(); ctx.arc(p.x,p.y,18,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha=1;
+  ctx.beginPath(); ctx.arc(p.x,p.y,7,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle=color; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(p.x+10,p.y); ctx.lineTo(p.x+42,p.y); ctx.stroke();
+  ctx.fillStyle="rgba(255,255,255,.92)";
+  ctx.font="13px system-ui";
+  ctx.fillText(label, p.x+10, p.y-12);
+  ctx.restore();
+}
+function drawZones(model, entry, fit){
+  if(model && model.dsZones){
+    const {W,top,bottom,decision} = model;
+    const leftX = Math.floor(W*0.10);
+    const rightX = Math.floor(W*0.90);
+    const bandW = rightX-leftX;
+    const dz = model.dsZones.demand;
+    const sz = model.dsZones.supply;
+    const thickMin = 10;
+    ctx.save(); ctx.lineWidth = 2;
+    function drawBand(zone, label, stroke, fill){
+      if(!zone) return;
+      const y0 = clamp(Math.min(zone.y0, zone.y1), top, bottom);
+      const y1 = clamp(Math.max(zone.y0, zone.y1), top, bottom);
+      const h = Math.max(thickMin, (y1-y0));
+      const p = imgToCanvas(leftX, y0, fit);
+      ctx.strokeStyle = stroke;
+      ctx.fillStyle = fill;
+      ctx.beginPath(); ctx.rect(p.x, p.y, bandW*fit.scale, h*fit.scale);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = stroke.replace(".78",".95").replace(".80",".95");
+      ctx.font = "12px system-ui";
+      ctx.fillText(label, p.x+10, p.y+16);
+    }
+    drawBand(sz, "SUPPLY (OFFRE)", "rgba(255,91,110,.80)", "rgba(255,91,110,.10)");
+    drawBand(dz, "DEMAND (DEMANDE)", "rgba(47,227,140,.80)", "rgba(47,227,140,.10)");
+    const rec = model.dsRec || ((decision==="ACHAT") ? "DEMAND" : (decision==="VENTE") ? "SUPPLY" : "—");
+    const recZone = (rec==="DEMAND") ? dz : (rec==="SUPPLY") ? sz : null;
+    if(recZone){
+      const y0 = clamp(Math.min(recZone.y0, recZone.y1), top, bottom);
+      const y1 = clamp(Math.max(recZone.y0, recZone.y1), top, bottom);
+      const h = Math.max(thickMin, (y1-y0));
+      const p = imgToCanvas(leftX, y0, fit);
+      ctx.strokeStyle = "rgba(136,167,255,.95)";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(p.x+1, p.y+1, bandW*fit.scale-2, h*fit.scale-2);
+      ctx.fillStyle = "rgba(136,167,255,.95)";
+      ctx.font = "12px system-ui";
+      ctx.fillText("ZONE RECOMMANDÉE", p.x+10, p.y + h*fit.scale - 10);
+      ctx.lineWidth = 2;
+    }
+    if(model.dsZones.breakLevelY!=null){
+      const y = clamp(model.dsZones.breakLevelY, top, bottom);
+      const p1 = imgToCanvas(leftX, y, fit);
+      const p2 = imgToCanvas(rightX, y, fit);
+      ctx.strokeStyle="rgba(255,204,102,.95)";
+      ctx.setLineDash([8,6]);
+      ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle="rgba(255,204,102,.95)";
+      ctx.fillText("NIVEAU CASSURE (proxy)", p1.x+10, p1.y-8);
+    }
+    ctx.restore();
+  }
+}
+function drawLimit(model, entry, fit){
+  const {W,top,bottom,decision} = model;
+  if(!(decision==="VENTE" || decision==="ACHAT")) return;
+  const range = Math.max(1,(bottom-top));
+  const slOffset = clamp(Math.floor(range*0.10), 18, Math.floor(range*0.26));
+  const limitY = (decision==="VENTE")
+    ? clamp(entry.iy - slOffset, top, bottom)
+    : clamp(entry.iy + slOffset, top, bottom);
+  const leftX = Math.floor(W*0.10);
+  const rightX = Math.floor(W*0.90);
+  const p1 = imgToCanvas(leftX, limitY, fit);
+  const p2 = imgToCanvas(rightX, limitY, fit);
+  ctx.save();
+  ctx.lineWidth=3;
+  ctx.strokeStyle="rgba(255,204,102,.95)";
+  ctx.setLineDash([6,6]);
+  ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle="rgba(255,204,102,.95)";
+  ctx.font="12px system-ui";
+  ctx.fillText("LIMIT (proxy)", p1.x+10, p1.y-8);
+  ctx.restore();
+  return {limitY, slOffset};
+}
+function drawTakeProfit(model, entry, fit, limitInfo){
+  const {W,top,bottom,decision} = model;
+  if(!(decision==="VENTE" || decision==="ACHAT")) return;
+  const range = Math.max(1,(bottom-top));
+  const slOffset = limitInfo?.slOffset ?? clamp(Math.floor(range*0.10), 18, Math.floor(range*0.26));
+  const tpOffset = Math.max(24, Math.floor(slOffset * 1.7));
+  const tpY = (decision==="VENTE")
+    ? clamp(entry.iy + tpOffset, top, bottom)
+    : clamp(entry.iy - tpOffset, top, bottom);
+  const leftX = Math.floor(W*0.10);
+  const rightX = Math.floor(W*0.90);
+  const p1 = imgToCanvas(leftX, tpY, fit);
+  const p2 = imgToCanvas(rightX, tpY, fit);
+  ctx.save();
+  ctx.lineWidth=3;
+  ctx.strokeStyle="rgba(47,227,140,.95)";
+  ctx.setLineDash([14,8]);
+  ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle="rgba(47,227,140,.95)";
+  ctx.font="12px system-ui";
+  ctx.fillText("TAKE PROFIT (TP) raisonnable", p1.x+10, p1.y-8);
+  ctx.restore();
+  return {tpY, tpOffset};
+}
+
+let BLINK_TICK = null;
+let blinkOn = true;
+
+function draw(){
+  const inner = wrap.querySelector(".canvasWrap") || wrap;
+  const W = inner.clientWidth;
+  const H = inner.clientHeight;
+  drawGrid(W,H);
+
+  if(!HAS_IMG && !LIVE_ACTIVE){
+    ctx.save();
+    ctx.fillStyle="rgba(255,255,255,.70)";
+    ctx.font="14px system-ui";
+    ctx.fillText("Dépose une capture ici, ou clique Téléverser, puis clique Analyser.", 18, 28);
+    ctx.restore();
+    return;
+  }
+
+  const srcW = LIVE_ACTIVE ? (LIVE_VIDEO.videoWidth||IMG.width) : IMG.width;
+  const srcH = LIVE_ACTIVE ? (LIVE_VIDEO.videoHeight||IMG.height) : IMG.height;
+  const fit = computeFit(srcW, srcH, W, H);
+
+  if(LIVE_ACTIVE){
+    ctx.drawImage(LIVE_VIDEO, fit.x, fit.y, srcW*fit.scale, srcH*fit.scale);
+  }else{
+    ctx.drawImage(IMG, fit.x, fit.y, IMG.width*fit.scale, IMG.height*fit.scale);
+  }
+
+  if(!LAST) return;
+
+  const flashActive = (LAST && (LAST.model.decision==="ACHAT" || LAST.model.decision==="VENTE"));
+  const flashAlpha = (!flashActive) ? 1 : (blinkOn ? 1 : 0.35);
+
+  ctx.save();
+  ctx.globalAlpha = flashAlpha;
+
+  if(overlays.bands) drawBands(LAST.bands, fit);
+  if(overlays.trend) drawTrendLine(LAST.model, fit);
+  if(overlays.zones) drawZones(LAST.model, LAST.entry, fit);
+
+  let limitInfo=null;
+  if(overlays.limit) limitInfo = drawLimit(LAST.model, LAST.entry, fit);
+  if(overlays.tp) drawTakeProfit(LAST.model, LAST.entry, fit, limitInfo);
+
+  drawEntry(LAST.entry, fit);
+
+  ctx.restore();
+}
+
+/* ---------- Image loading ---------- */
+function loadFile(file){
+  return new Promise((resolve, reject)=>{
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = ()=>{
+      try{ URL.revokeObjectURL(url); }catch(_){}
+      IMG = img;
+      HAS_IMG = true;
+      LAST = null;
+      setStatus("Image chargée. Clique “Analyser”.");
+      resizeCanvas();
+      resolve();
+    };
+    img.onerror = ()=>{
+      try{ URL.revokeObjectURL(url); }catch(_){}
+      alert("Impossible de charger l'image.");
+      reject(new Error("load image failed"));
+    };
+    img.src = url;
+  });
+}
+
+/* ---------- Analysis logic (same as v16) ---------- */
+function luminance(r,g,b){ return 0.2126*r + 0.7152*g + 0.0722*b; }
+
+const TF_CANDLES_NEED = { D1: 100, H4: 150, H1: 200, M15: 250 };
+let liveSettings = { tfSelect:"AUTO", candlesVisible:300 };
+
+function getWantedTF(tfDetect){
+  const sel = (liveSettings.tfSelect || "AUTO");
+  if(sel && sel !== "AUTO") return sel;
+  if(tfDetect && TF_CANDLES_NEED[tfDetect]) return tfDetect;
+  return "H4";
+}
+function getCandlesNeed(tf){ return TF_CANDLES_NEED[tf] || 150; }
+function getCandlesVisible(){
+  const v = parseInt(String(liveSettings.candlesVisible || 300), 10);
+  return clamp(isNaN(v)?300:v, 30, 5000);
+}
+function refreshCandleNeed(tfDetect){
+  const tf = getWantedTF(tfDetect);
+  const need = getCandlesNeed(tf);
+  const el = modalBody.querySelector("#candlesNeed");
+  if(el) el.textContent = String(need);
+  return {tf, need};
+}
+
+function analyzeSource(source, srcW, srcH){
+  const off = document.createElement("canvas");
+  off.width = srcW; off.height = srcH;
+  const octx = off.getContext("2d", {willReadFrequently:true});
+  octx.drawImage(source, 0, 0, off.width, off.height);
+  const imgData = octx.getImageData(0,0,off.width,off.height);
+  const W = off.width, H = off.height, px = imgData.data;
+
+  function detectTF(){
+    const candidates = ["M1","M5","M15","H1","H4","D1"];
+    const area = {x: Math.floor(W*0.02), y: Math.floor(H*0.02), w: Math.floor(W*0.26), h: Math.floor(H*0.14)};
+    const sW = 220, sH = 90;
+    const tmp = document.createElement("canvas"); tmp.width=sW; tmp.height=sH;
+    const tctx = tmp.getContext("2d", {willReadFrequently:true});
+    tctx.drawImage(off, area.x, area.y, area.w, area.h, 0,0,sW,sH);
+    const region = tctx.getImageData(0,0,sW,sH).data;
+
+    const t2 = document.createElement("canvas"); t2.width=sW; t2.height=sH;
+    const c2 = t2.getContext("2d", {willReadFrequently:true});
+
+    function scoreFor(text){
+      let best=-1;
+      const sizes=[18,20,22,24];
+      for(const fs of sizes){
+        c2.clearRect(0,0,sW,sH);
+        c2.fillStyle="black"; c2.fillRect(0,0,sW,sH);
+        c2.fillStyle="white";
+        c2.font="900 "+fs+"px system-ui, Segoe UI, Roboto, Arial";
+        c2.textBaseline="top";
+        c2.fillText(text, 10, 10);
+        const templ = c2.getImageData(0,0,sW,sH).data;
+
+        let same=0, tot=0;
+        for(let i=0;i<region.length;i+=4){
+          const lum = 0.2126*region[i] + 0.7152*region[i+1] + 0.0722*region[i+2];
+          const v = lum>180 ? 1 : 0;
+          const tl = 0.2126*templ[i] + 0.7152*templ[i+1] + 0.0722*templ[i+2];
+          const tv = tl>180 ? 1 : 0;
+          if(v===0 && tv===0) continue;
+          tot++;
+          if(v===tv) same++;
+        }
+        if(tot<120) continue;
+        const s = same/tot;
+        if(s>best) best=s;
+      }
+      return best;
+    }
+
+    let bestTF="—", bestScore=0.0;
+    for(const c of candidates){
+      const s = scoreFor(c);
+      if(s>bestScore){ bestScore=s; bestTF=c; }
+    }
+    if(bestScore < 0.62) return "—";
+    return bestTF;
+  }
+  const tfDetect = detectTF();
+
+  const top = Math.floor(H*0.12);
+  const bottom = Math.floor(H*0.88);
+  const startX = Math.floor(W*0.18);
+  const endX   = Math.floor(W*0.82);
+
+  const bandsCount = 24;
+  const bandWidth = Math.max(6, Math.floor(W*0.008));
+
+  const points=[];
+  const bands=[];
+  for(let i=0;i<bandsCount;i++){
+    const x = Math.floor(startX + (endX-startX)*(i/(bandsCount-1)));
+    const x0 = Math.max(0, x - Math.floor(bandWidth/2));
+    const x1 = Math.min(W-1, x0 + bandWidth);
+
+    let bestY=null, bestScore=-1;
+    for(let y=top+1;y<bottom-1;y++){
+      let s0=0,s1=0,s2=0;
+      for(let xx=x0;xx<x1;xx++){
+        const i0=((y-1)*W+xx)*4;
+        const i1=(y*W+xx)*4;
+        const i2=((y+1)*W+xx)*4;
+        s0 += luminance(px[i0],px[i0+1],px[i0+2]);
+        s1 += luminance(px[i1],px[i1+1],px[i1+2]);
+        s2 += luminance(px[i2],px[i2+1],px[i2+2]);
+      }
+      const n=(x1-x0)||1;
+      const a0=s0/n, a1=s1/n, a2=s2/n;
+      const score = Math.abs(a1-a0) + Math.abs(a2-a1);
+      if(score>bestScore){ bestScore=score; bestY=y; }
+    }
+    if(bestY!==null){
+      points.push({x,y:bestY,score:bestScore});
+      bands.push({x:x0,y:top,w:(x1-x0),h:(bottom-top)});
+    }
+  }
+
+  if(points.length<10){
+    return {status:"FAIL", bands, W,H,top,bottom,startX,endX, tfDetect:"—"};
+  }
+
+  // Weighted linear regression y = m x + b
+  let sw=0,sx=0,sy=0,sxx=0,sxy=0;
+  for(const p of points){
+    const w=Math.max(1,p.score);
+    sw+=w; sx+=w*p.x; sy+=w*p.y; sxx+=w*p.x*p.x; sxy+=w*p.x*p.y;
+  }
+  const denom=(sw*sxx - sx*sx);
+  const m = denom!==0 ? (sw*sxy - sx*sy)/denom : 0;
+  const b = (sy - m*sx)/sw;
+
+  const slopeNorm = m*(W/Math.max(1,(bottom-top)));
+  let trend="RANGE";
+  if(slopeNorm < -0.06) trend="UP";
+  else if(slopeNorm > 0.06) trend="DOWN";
+
+  let err=0;
+  for(const p of points){
+    const yh=m*p.x+b;
+    err += Math.abs(p.y - yh);
+  }
+  const avgErr = err/points.length;
+  const conf = clamp(1 - (avgErr / (Math.max(1,(bottom-top))*0.35)), 0, 1);
+  const noise = clamp(avgErr / (Math.max(1,(bottom-top))*0.35), 0, 1);
+
+  const entryX = Math.min(W-1, Math.floor(endX*0.98));
+  let entryY = clamp(m*entryX + b, top, bottom);
+
+  return {status:"OK", W,H,top,bottom,startX,endX, m,b, trend, conf, noise, tfDetect, bands, points, entry:{x:entryX,y:entryY}};
+}
+
+function runDecision(out){
+  const isRange = (out.trend==="RANGE");
+  const risk = clamp(Math.round(100*(0.55*out.noise + 0.35*(1-out.conf) + (isRange?0.20:0.0))), 0, 100);
+
+  const rangeH = Math.max(1,(out.bottom-out.top));
+  const slopeNorm = out.m*(out.W/Math.max(1,rangeH));
+  const slopeMag = clamp(Math.abs(slopeNorm)/0.18, 0, 1);
+
+  const trendScore = isRange ? 6 : Math.round(25*(0.55 + 0.45*slopeMag));
+  const structureScore = Math.round(25*clamp(out.conf,0,1));
+
+  const entryY = out.entry.y;
+  const lineY = out.m*out.entry.x + out.b;
+  const dist = Math.abs(entryY - lineY) / rangeH;
+  const rejScore = Math.round(20*clamp(1 - (dist/0.22), 0, 1));
+
+  const readScore = Math.round(15*clamp(1 - out.noise, 0, 1));
+  const riskScore = Math.round(15*clamp(1 - (risk/100), 0, 1));
+  const score = clamp(trendScore + structureScore + rejScore + readScore + riskScore, 0, 100);
+
+  const wanted = refreshCandleNeed(out.tfDetect);
+  const candlesVisible = getCandlesVisible();
+  const candlesNeed = wanted.need;
+  const candlesOK = candlesVisible >= candlesNeed;
+  const scoreAdj = candlesOK ? score : Math.max(0, Math.round(score * 0.55));
+
+  let decision="ATTENTE";
+  if(out.trend==="UP" && out.conf>=0.45) decision="ACHAT";
+  if(out.trend==="DOWN" && out.conf>=0.45) decision="VENTE";
+
+  let zoneRec = "REJET";
+  if(dist > 0.18) zoneRec = "EXTREME";
+  else if(slopeMag > 0.72 && out.conf >= 0.55) zoneRec = "RETEST";
+  else zoneRec = "REJET";
+
+  let entryMode = "—";
+  const confPct = Math.round(out.conf*100);
+
+  if(risk >= 60 || out.trend==="RANGE"){
+    decision = "ATTENTE";
+    entryMode = "ATTENTE";
+  }else{
+    if(scoreAdj < 70){
+      decision = "ATTENTE";
+      entryMode = "ATTENTE (Score<70)";
+    }else{
+      if(confPct >= 80 && risk <= 35) entryMode = "ENTRÉE IMMÉDIATE";
+      else if(confPct >= 65 && confPct <= 79 && risk <= 59) entryMode = "ENTRÉE STANDARD";
+      else if(confPct >= 55 && confPct <= 64 && risk <= 59) entryMode = "ENTRÉE SÉCURISÉE";
+      else entryMode = "ENTRÉE STANDARD";
+    }
+  }
+
+  const slOffset = clamp(Math.floor(rangeH*0.10), 18, Math.floor(rangeH*0.26));
+  const tpOffset = Math.max(24, Math.floor(slOffset*1.7));
+  const rr = tpOffset / Math.max(1, slOffset);
+
+  if(out.noise >= 0.70){
+    decision="ATTENTE";
+    entryMode="ATTENTE (Bruit élevé)";
+  }
+
+  // Pullback + break/retest + DS (proxy)
+  const ptsRaw = (out.points || []).slice().sort((a,b)=>a.x-b.x);
+  const pts = ptsRaw.length ? ptsRaw : [{x:out.entry.x, y:out.entry.y}];
+  const cur = pts[pts.length-1];
+  const N = Math.min(8, pts.length);
+  let lm=0;
+  if(N>=3){
+    let sw2=0,sx2=0,sy2=0,sxx2=0,sxy2=0;
+    for(let i=pts.length-N;i<pts.length;i++){
+      const p=pts[i]; const w=1;
+      sw2+=w; sx2+=w*p.x; sy2+=w*p.y; sxx2+=w*p.x*p.x; sxy2+=w*p.x*p.y;
+    }
+    const den=(sw2*sxx2 - sx2*sx2);
+    lm = den!==0 ? (sw2*sxy2 - sx2*sy2)/den : 0;
+  }
+  const pullback = (out.trend==="UP") ? (lm>0.02) : (out.trend==="DOWN") ? (lm<-0.02) : false;
+
+  let pbZone = "—";
+  if(pullback){
+    if(dist < 0.08) pbZone = "PULLBACK 1";
+    else if(dist < 0.14) pbZone = "PULLBACK 2";
+    else pbZone = "PULLBACK 3";
+  }
+
+  const swingsH=[], swingsL=[];
+  for(let i=1;i<pts.length-1;i++){
+    const a=pts[i-1].y, b=pts[i].y, c=pts[i+1].y;
+    if(b < a && b < c) swingsH.push(pts[i]);
+    if(b > a && b > c) swingsL.push(pts[i]);
+  }
+  const lastHigh = swingsH.length ? swingsH[swingsH.length-1] : null;
+  const lastLow  = swingsL.length ? swingsL[swingsL.length-1] : null;
+
+  const thr = Math.max(10, Math.floor(rangeH*0.035));
+  let cassure=false, retest=false, structure="—";
+  let breakLevelY = null;
+
+  if(out.trend==="UP" && lastHigh){
+    breakLevelY = lastHigh.y;
+    cassure = (cur.y < lastHigh.y - thr);
+    if(cassure){
+      const recent = pts.slice(-Math.min(6, pts.length));
+      const tol = Math.max(10, Math.floor(rangeH*0.020));
+      retest = recent.some(p=> Math.abs(p.y - lastHigh.y) <= tol );
+    }
+  }
+  if(out.trend==="DOWN" && lastLow){
+    breakLevelY = lastLow.y;
+    cassure = (cur.y > lastLow.y + thr);
+    if(cassure){
+      const recent = pts.slice(-Math.min(6, pts.length));
+      const tol = Math.max(10, Math.floor(rangeH*0.020));
+      retest = recent.some(p=> Math.abs(p.y - lastLow.y) <= tol );
+    }
+  }
+  const confirmPB = !!(pullback && cassure && retest);
+  if(out.trend==="UP" || out.trend==="DOWN"){
+    structure = confirmPB ? "OK" : (pullback ? "PULLBACK" : "—");
+  }
+
+  const thick = Math.max(12, Math.floor(rangeH*0.030));
+  let demand=null, supply=null;
+  if(lastLow) demand = {y0:lastLow.y - thick, y1:lastLow.y + thick};
+  if(lastHigh) supply = {y0:lastHigh.y - thick, y1:lastHigh.y + thick};
+
+  let dsRec = (decision==="ACHAT") ? "DEMAND" : (decision==="VENTE") ? "SUPPLY" : (out.trend==="UP") ? "DEMAND" : (out.trend==="DOWN") ? "SUPPLY" : "—";
+  let dsLabel = "—";
+  if(demand && supply) dsLabel = "DEMAND = support | SUPPLY = résistance";
+  else if(demand) dsLabel = "DEMAND = support";
+  else if(supply) dsLabel = "SUPPLY = résistance";
+  const dsZone = (dsRec ? (dsRec + " — " + dsLabel) : dsLabel);
+
+  const conclusionText =
+    decision + ". " + entryMode +
+    " | Zone=" + zoneRec +
+    " | Score=" + scoreAdj + "/100" +
+    " | Risque=" + risk + "/100";
+
+  const why=[];
+  if(out.trend==="RANGE") why.push("Marché latéral (RANGE)");
+  if(out.noise>=0.70) why.push("Bruit élevé");
+  if(out.conf<0.45) why.push("Confiance faible");
+  if(decision!=="ATTENTE") why.push("Aligné avec la tendance");
+
+  const reason = (decision==="ATTENTE")
+    ? ("Conclusion : ATTENTE. " + (why.length?("Raison(s) : "+why.join(" • ")):"Filtrage strict.") +
+       (candlesOK===false ? (" | Bougies insuff.: "+candlesVisible+"/"+candlesNeed) : "") +
+       " | Score="+scoreAdj+"/100 | Risque="+risk+"/100")
+    : ("Conclusion : "+decision+". "+entryMode+" | Zone="+zoneRec+" | Score="+scoreAdj+"/100 | Risque="+risk+"/100");
+
+  return {decision, risk, score:scoreAdj, rr, zoneRec, entryMode, pullback, pbZone, structure, cassure, retest, confirmPB, dsRec, dsZone, breakLevelY, demand, supply, tfWanted:wanted.tf, conclusionText, reason, conf: out.conf, noise: out.noise, trend: out.trend, tfDetect: out.tfDetect||"—"};
+}
+
+function runAnalyze(){
+  if(!HAS_IMG && !LIVE_ACTIVE){
+    alert("Aucune capture chargée.");
+    return;
+  }
+  const source = LIVE_ACTIVE ? LIVE_VIDEO : IMG;
+  const w = LIVE_ACTIVE ? (LIVE_VIDEO.videoWidth||0) : IMG.width;
+  const h = LIVE_ACTIVE ? (LIVE_VIDEO.videoHeight||0) : IMG.height;
+  if(w<20 || h<20){
+    alert("Lecture insuffisante. Agrandis le graphique.");
+    return;
+  }
+  const out = analyzeSource(source, w, h);
+  if(out.status!=="OK"){
+    LAST = null;
+    draw();
+    setStatus("Lecture insuffisante. Refaire une capture plus nette.");
+    applyResultsUI({
+      conclusionText:"ATTENTE. ATTENTE | Zone=— | Score=—/100 | Risque=—/100",
+      reason:"Lecture insuffisante. Refaire une capture plus nette."
+    });
+    return;
+  }
+  const meta = runDecision(out);
+  applyOverlay(out, meta);
+  applyResultsUI(meta);
+  setStatus(meta.reason);
+}
+
+/* ---------- Apply overlays & results ---------- */
+function applyOverlay(out, meta){
+  LAST = {
+    bands: out.bands,
+    model: {...out, decision: meta.decision, zoneRec: meta.zoneRec, dsRec: meta.dsRec, dsZones: {demand: meta.demand, supply: meta.supply, breakLevelY: meta.breakLevelY}},
+    entry: {ix: out.entry.x, iy: out.entry.y, decision: meta.decision}
+  };
+  draw();
+
+  if(!BLINK_TICK){
+    BLINK_TICK = setInterval(()=>{ blinkOn = !blinkOn; }, 380);
+  }
+}
+function fmtPct(x){ return Math.round(x*100) + "%"; }
+function mono(n, dec=2){ return Number(n).toFixed(dec); }
+
+function applyResultsUI(meta){
+  LAST_RES = meta || LAST_RES;
+
+  const c = (meta && meta.conclusionText) ? meta.conclusionText : "—";
+  $("miniConclusion").textContent = c.length>34 ? c.slice(0,34)+"…" : c;
+
+  // If results modal open, update
+  renderResultsToModal();
+}
+function renderResultsToModal(){
+  if(!modalBack.classList.contains("show")) return;
+  if(modalTitle.textContent.indexOf("Résultats") === -1) return;
+
+  const r = LAST_RES;
+  if(!r) return;
+
+  const map = {
+    r_decision: r.decision,
+    r_trend: r.trend,
+    r_conf: (r.conf!=null ? fmtPct(r.conf) : "—"),
+    r_noise:(r.noise!=null? fmtPct(r.noise): "—"),
+    r_rr: (r.rr!=null ? mono(r.rr,2)+" (proxy)" : "—"),
+    r_risk: (r.risk!=null ? String(r.risk): "—"),
+    r_score:(r.score!=null ? String(r.score): "—"),
+    r_tf: (r.tfDetect || "—") + (r.tfWanted ? (" | Choisi: "+r.tfWanted) : ""),
+    r_entryMode: r.entryMode || "—",
+    r_zoneRec: r.zoneRec || "—",
+    r_pb: (r.pullback==null? "—" : (r.pullback ? "OUI":"NON")),
+    r_pbZone: r.pbZone || "—",
+    r_structure: r.structure || "—",
+    r_brk: (r.cassure==null? "—" : (r.cassure ? "OUI":"NON")),
+    r_retest: (r.retest==null? "—" : (r.retest ? "OUI":"NON")),
+    r_pbConf: (r.confirmPB==null? "—" : (r.confirmPB ? "OUI":"NON")),
+    r_dsZone: r.dsZone || "—",
+    r_reason: r.reason || "—",
+    r_conclusion: r.conclusionText || "—",
+  };
+  for(const k in map){
+    const el = $(k);
+    if(el) el.textContent = map[k];
+  }
+}
+
+
+function copyNarrativeText(){
+  const r = LAST_RES || {};
+  const blocks = [
+    "Forex Capture Analyzer PRO — Résultats narratifs",
+    "Décision : " + (r.decision || "—"),
+    "Trend : " + (r.trend || "—"),
+    "Confiance : " + (r.conf!=null ? fmtPct(r.conf) : "—"),
+    "Risque : " + (r.risk!=null ? String(r.risk) : "—"),
+    "Score : " + (r.score!=null ? String(r.score) : "—"),
+    "Conclusion : " + (r.conclusionText || "—"),
+    "",
+    "Lecture détaillée : " + (document.getElementById("ra_market_reading")?.textContent || "—"),
+    "",
+    "Projection probable : " + (document.getElementById("ra_projection")?.textContent || "—"),
+    "",
+    "Consignes trader : " + (document.getElementById("ra_instructions")?.textContent || "—"),
+    "",
+    "Cas similaires : " + (document.getElementById("ra_examples")?.textContent || "—"),
+    "",
+    "Synthèse : " + (document.getElementById("ra_summary")?.textContent || "—")
+  ].join("\n");
+  navigator.clipboard?.writeText(blocks).then(()=>{
+    setStatus("Analyse copiée dans le presse-papiers.");
+  }).catch(()=>{
+    alert(blocks);
+  });
+}
+function bindResultsActionBar(){
+  document.getElementById("btnCopyNarrative")?.addEventListener("click", copyNarrativeText, {once:true});
+  document.getElementById("btnExportNarrative")?.addEventListener("click", exportCurrentAnalysis, {once:true});
+  document.getElementById("btnCloseResults")?.addEventListener("click", closeModal, {once:true});
+}
+
+/* ---------- Status line ---------- */
+function setStatus(text){
+  $("statusLine").textContent = text || "";
+}
+
+/* ---------- Reset ---------- */
+$("btnReset").addEventListener("click", ()=>{
+  if(!confirm("Reset : effacer capture + résultats ?")) return;
+  stopLive();
+  IMG = new Image();
+  HAS_IMG = false;
+  LAST = null;
+  LAST_RES = null;
+  $("miniConclusion").textContent = "—";
+  setStatus("Reset effectué.");
+  draw();
+});
+
+/* ---------- Analyze button ---------- */
+$("btnAnalyze").addEventListener("click", runAnalyze);
+
+/* ---------- LIVE (screen capture) ---------- */
+let LIVE_ACTIVE = false;
+let LIVE_STREAM = null;
+let LIVE_VIDEO = document.createElement("video");
+LIVE_VIDEO.playsInline=true;
+LIVE_VIDEO.muted=true;
+
+function setLiveUI(on){
+  $("liveTag").textContent = on ? "LIVE: ON" : "LIVE: OFF";
+  const dot = modalBody.querySelector("#dotLive");
+  const st = modalBody.querySelector("#liveStatus");
+  if(dot) dot.classList.toggle("on", on);
+  if(st) st.textContent = on ? "LIVE: ON" : "LIVE: OFF";
+}
+async function startLive(){
+  try{
+    LIVE_STREAM = await navigator.mediaDevices.getDisplayMedia({
+      video: { frameRate: 10, width: {ideal: 1920}, height: {ideal: 1080} },
+      audio: false
+    });
+    LIVE_VIDEO.srcObject = LIVE_STREAM;
+    await LIVE_VIDEO.play();
+    LIVE_ACTIVE = true;
+    HAS_IMG = true;
+    setLiveUI(true);
+    setStatus("LIVE actif : le canvas affiche le partage d'écran. Clique Analyser (ou laisse tourner).");
+    resizeCanvas();
+
+    // auto analyze interval
+    if(window.__LIVE_TICK) clearInterval(window.__LIVE_TICK);
+    window.__LIVE_TICK = setInterval(()=>{
+      if(!LIVE_ACTIVE) return;
+      const w = LIVE_VIDEO.videoWidth||0, h = LIVE_VIDEO.videoHeight||0;
+      if(w<20 || h<20) return;
+      const out = analyzeSource(LIVE_VIDEO, w, h);
+      if(out.status!=="OK"){
+        LAST=null; draw();
+        applyResultsUI({conclusionText:"ATTENTE. LIVE lecture insuffisante | Zone=— | Score=—/100 | Risque=—/100", reason:"LIVE : lecture insuffisante. Agrandis le graphique et garde assez de bougies."});
+        return;
+      }
+      const meta = runDecision(out);
+      applyOverlay(out, meta);
+      applyResultsUI(meta);
+    }, 900);
+
+    const tracks = LIVE_STREAM.getVideoTracks();
+    if(tracks && tracks[0]){
+      tracks[0].onended = ()=> stopLive();
+    }
+  }catch(err){
+    setLiveUI(false);
+    alert("LIVE refusé ou non disponible. Utilise l'upload.\nDétail: " + (err?.message||err));
+  }
+}
+function stopLive(){
+  LIVE_ACTIVE = false;
+  setLiveUI(false);
+  if(window.__LIVE_TICK){ clearInterval(window.__LIVE_TICK); window.__LIVE_TICK=null; }
+  if(LIVE_STREAM){
+    LIVE_STREAM.getTracks().forEach(t=>t.stop());
+    LIVE_STREAM=null;
+  }
+  draw();
+}
+
+/* ---------- Modal wiring ---------- */
+function refreshLiveBadge(){ setLiveUI(LIVE_ACTIVE); }
+
+function wireModal(templateId){
+  if(templateId==="tpl_live"){
+    const tf = modalBody.querySelector("#tfSelect");
+    const cv = modalBody.querySelector("#candlesVisible");
+    if(tf) tf.value = liveSettings.tfSelect || "AUTO";
+    if(cv) cv.value = String(liveSettings.candlesVisible || 300);
+
+    const btnOpenTrade = modalBody.querySelector("#btnOpenTrade");
+    const btnStart = modalBody.querySelector("#btnLiveStart");
+    const btnStop = modalBody.querySelector("#btnLiveStop");
+
+    const applySettings = ()=>{
+      liveSettings.tfSelect = tf ? tf.value : "AUTO";
+      liveSettings.candlesVisible = parseInt(cv ? cv.value : "300", 10) || 300;
+      // update candle need display
+      refreshCandleNeed(LAST ? (LAST.model.tfDetect||"—") : "—");
+    };
+
+    if(tf) tf.addEventListener("change", applySettings);
+    if(cv) cv.addEventListener("change", applySettings);
+
+    if(btnOpenTrade){
+      btnOpenTrade.addEventListener("click", ()=>{
+        const url = (modalBody.querySelector("#tradeUrl")?.value || "").trim();
+        if(!url){ alert("Colle d'abord le lien du site/graphique."); return; }
+        if(!/^https?:\/\//i.test(url)){
+          alert("Lien invalide. Mets un lien qui commence par http:// ou https://");
+          return;
+        }
+        window.open(url, "_blank", "noopener,noreferrer");
+      });
+    }
+    if(btnStart) btnStart.addEventListener("click", ()=>{ applySettings(); startLive(); refreshLiveBadge(); });
+    if(btnStop) btnStop.addEventListener("click", ()=>{ stopLive(); refreshLiveBadge(); });
+
+    applySettings();
+    refreshLiveBadge();
+  }
+}
+
+/* Init */
+resizeCanvas();
+draw();
+
+/* ================= DISCLAIMER CONTROL (GATED) ================= */
+function showDisclaimerGate(){
+  const overlay = document.getElementById("disclaimerOverlay");
+  const btn = document.getElementById("acceptDisclaimer");
+  if(!overlay || !btn) return;
+
+  const accepted = localStorage.getItem("disclaimerAccepted")==="yes";
+  if(accepted){
+    overlay.style.display="none";
+    document.body.classList.remove("locked");
+    return;
+  }
+
+  // Lock the app until acceptance
+  document.body.classList.add("locked");
+  overlay.style.display="flex";
+
+  if(!btn.dataset.bound){
+    btn.dataset.bound="1";
+    btn.addEventListener("click", function(){
+      localStorage.setItem("disclaimerAccepted","yes");
+      overlay.style.display="none";
+      document.body.classList.remove("locked");
+    });
+  }
+}
+
+document.addEventListener("DOMContentLoaded", showDisclaimerGate);
+
+
+
+
+/* ===== Premium additions v22+ ===== */
+const ANALYSIS_STORE_KEY = "fxAnalyzerHistoryV22";
+let VIEW = {scale:1, min:1, max:5, offX:0, offY:0, dragging:false, startX:0, startY:0};
+let LAST_IMAGE_DATAURL = null;
+
+function getFit(){
+  const inner = wrap.querySelector(".canvasWrap") || wrap;
+  const W = inner.clientWidth;
+  const H = inner.clientHeight;
+  const srcW = LIVE_ACTIVE ? (LIVE_VIDEO.videoWidth||IMG.width||W) : (IMG.width||W);
+  const srcH = LIVE_ACTIVE ? (LIVE_VIDEO.videoHeight||IMG.height||H) : (IMG.height||H);
+  const fit = computeFit(srcW, srcH, W, H);
+  fit.x += VIEW.offX;
+  fit.y += VIEW.offY;
+  fit.scale *= VIEW.scale;
+  return fit;
+}
+
+const _oldComputeFit = computeFit;
+computeFit = function(imgW, imgH, W, H){
+  const base = _oldComputeFit(imgW,imgH,W,H);
+  return { scale: base.scale * VIEW.scale, x: base.x + VIEW.offX, y: base.y + VIEW.offY };
+};
+
+function setZoomBadge(){
+  const el = document.getElementById("zoomBadge");
+  if(el) el.textContent = "Zoom " + Math.round(VIEW.scale*100) + "%";
+}
+function resetView(){ VIEW.scale=1; VIEW.offX=0; VIEW.offY=0; setZoomBadge(); draw(); }
+cv.addEventListener('wheel', (e)=>{
+  e.preventDefault();
+  const rect = cv.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const prev = VIEW.scale;
+  VIEW.scale = clamp(VIEW.scale * (e.deltaY < 0 ? 1.08 : 0.92), VIEW.min, VIEW.max);
+  const ratio = VIEW.scale / prev;
+  VIEW.offX = mx - (mx - VIEW.offX) * ratio;
+  VIEW.offY = my - (my - VIEW.offY) * ratio;
+  setZoomBadge();
+  draw();
+}, {passive:false});
+cv.addEventListener('mousedown', (e)=>{ VIEW.dragging=true; VIEW.startX=e.clientX; VIEW.startY=e.clientY; wrap.classList.add('dragging'); });
+window.addEventListener('mouseup', ()=>{ VIEW.dragging=false; wrap.classList.remove('dragging'); });
+window.addEventListener('mousemove', (e)=>{ if(!VIEW.dragging) return; VIEW.offX += e.clientX - VIEW.startX; VIEW.offY += e.clientY - VIEW.startY; VIEW.startX=e.clientX; VIEW.startY=e.clientY; draw(); });
+cv.addEventListener('dblclick', resetView);
+const _oldResizeCanvas = resizeCanvas;
+resizeCanvas = function(){ _oldResizeCanvas(); setZoomBadge(); };
+
+function inferSymbol(){
+  if(LIVE_ACTIVE && LIVE_VIDEO && LIVE_VIDEO.videoWidth){
+    return 'LIVE';
+  }
+  if(fileInput && fileInput.files && fileInput.files[0]){
+    const name = fileInput.files[0].name || '';
+    const m = name.match(/(EURUSD|GBPUSD|USDJPY|XAUUSD|BTCUSD|ETHUSD|NAS100|US30|GER40)/i);
+    if(m) return m[1].toUpperCase();
+  }
+  return '—';
+}
+function loadHistory(){ try{return JSON.parse(localStorage.getItem(ANALYSIS_STORE_KEY)||'[]')}catch(e){return []} }
+function saveHistory(list){ localStorage.setItem(ANALYSIS_STORE_KEY, JSON.stringify(list.slice(0,50))); updateHistoryTag(); }
+function updateHistoryTag(){ const list=loadHistory(); const el=document.getElementById('historyCountTag'); if(el) el.textContent = list.length + (list.length>1 ? ' analyses' : ' analyse'); }
+function saveCurrentAnalysis(meta){
+  if(!meta) return;
+  const list = loadHistory();
+  const sig = [meta.decision, meta.score, meta.risk, meta.trend, meta.tfDetect, meta.symbol].join('|');
+  const last = list[0];
+  if(last && [last.decision,last.score,last.risk,last.trend,last.tf,last.symbol].join('|')===sig) return;
+  list.unshift({
+    id: 'A'+Date.now(),
+    date: new Date().toLocaleString('fr-FR'),
+    decision: meta.decision || '—',
+    trend: meta.trend || '—',
+    score: meta.score ?? null,
+    risk: meta.risk ?? null,
+    conf: meta.conf ?? null,
+    symbol: meta.symbol || '—',
+    tf: meta.tfDetect || meta.tfWanted || '—',
+    conclusion: meta.conclusionText || '',
+    reason: meta.reason || ''
+  });
+  saveHistory(list);
+}
+function openHistory(){ openModal('Historique des analyses', 'tpl_history'); renderHistory(); }
+function renderHistory(){
+  const host = document.getElementById('historyList');
+  if(!host) return;
+  const list = loadHistory();
+  if(!list.length){ host.innerHTML = '<div class="note">Aucune analyse sauvegardée pour le moment.</div>'; return; }
+  host.innerHTML = list.map(item => `
+    <div class="histItem">
+      <div class="histTop"><div><b>${item.decision}</b> · ${item.symbol||'—'} · ${item.tf||'—'}</div><div class="histMeta">${item.date}</div></div>
+      <div class="histMeta">Trend: ${item.trend} | Score: ${item.score ?? '—'} | Risque: ${item.risk ?? '—'} | Confiance: ${item.conf!=null ? Math.round(item.conf*100)+'%' : '—'}</div>
+      <div class="note" style="margin-top:6px">${item.conclusion || '—'}</div>
+    </div>`).join('');
+  const clr = document.getElementById('btnClearHistory');
+  if(clr) clr.onclick = ()=>{ if(confirm("Supprimer tout l'historique ?")){ saveHistory([]); renderHistory(); renderDashboard(); } };
+}
+function openDashboard(){ openModal('Dashboard Premium Temps Réel', 'tpl_dashboard'); renderDashboard(); }
+function renderDashboard(){
+  const list = loadHistory();
+  const total = list.length;
+  const buys = list.filter(x=>x.decision==='ACHAT').length;
+  const sells = list.filter(x=>x.decision==='VENTE').length;
+  const waits = list.filter(x=>x.decision==='ATTENTE').length;
+  const avg = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
+  const avgScore = avg(list.map(x=>Number(x.score)||0).filter(x=>x>=0));
+  const avgRisk = avg(list.map(x=>Number(x.risk)||0).filter(x=>x>=0));
+  const avgConf = avg(list.map(x=>Math.round((Number(x.conf)||0)*100)).filter(x=>x>=0));
+  const freq = {}; list.forEach(x=>{ const k=(x.symbol||'—'); freq[k]=(freq[k]||0)+1; });
+  const topSymbol = Object.entries(freq).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
+  const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  const fmtDate = (v)=>{
+    if(!v) return '—';
+    const d = new Date(v);
+    return isNaN(d) ? String(v) : d.toLocaleString('fr-FR');
+  };
+  const fmtDateShort = (v)=>{
+    if(!v) return '—';
+    const d = new Date(v);
+    return isNaN(d) ? String(v) : d.toLocaleDateString('fr-FR');
+  };
+  const daysRemaining = (expiration)=>{
+    if(!expiration) return '—';
+    const exp = new Date(expiration + 'T23:59:59');
+    if(isNaN(exp)) return '—';
+    const diff = Math.ceil((exp.getTime() - Date.now()) / 86400000);
+    if(diff < 0) return 'Expirée';
+    if(diff === 0) return 'Expire aujourd’hui';
+    return diff + (diff > 1 ? ' jours' : ' jour');
+  };
+  const lic = window.FXA_LICENSE || null;
+  const planLabel = lic?.plan_label || lic?.plan_id || '—';
+  const purchased = Number(lic?.analysis_limit ?? 0);
+  const used = Number(lic?.analysis_count ?? 0);
+  const remainingNumeric = lic?.mode === 'count'
+    ? Number(lic?.analyses_remaining ?? Math.max(0, purchased - used))
+    : null;
+  const remaining = lic?.mode === 'count' ? remainingNumeric : 'Illimité';
+  const modeLabel = lic?.mode === 'count' ? 'Par captures' : (lic?.mode === 'duration' ? 'Par durée' : '—');
+  const shortKey = lic?.license_key ? String(lic.license_key).replace(/^(.{4}).+(.{4})$/, '$1••••••$2') : '—';
+  const statusRaw = String(lic?.status || '').toUpperCase();
+  const statusLabel = statusRaw === 'ACTIVE' ? 'ACTIVE' : (statusRaw === 'EXPIRED' ? 'EXPIRED' : (statusRaw === 'QUOTA_REACHED' ? 'EXPIRED' : (statusRaw || '—')));
+
+  set('d_total', total); set('d_buy', buys); set('d_sell', sells); set('d_wait', waits); set('d_avg_score', avgScore); set('d_avg_risk', avgRisk); set('d_avg_conf', avgConf + '%'); set('d_symbol', topSymbol);
+  set('lic_key_short', shortKey);
+  set('lic_plan', planLabel);
+  set('lic_status', statusLabel);
+  set('lic_mode', modeLabel);
+  set('lic_activated', fmtDate(lic?.activated_at));
+  set('lic_expiration', fmtDateShort(lic?.expiration));
+  set('lic_remaining_days', daysRemaining(lic?.expiration));
+  set('lic_last_seen', fmtDate(lic?.last_seen_at));
+  set('lic_purchased', purchased || (lic?.mode === 'duration' ? 'Accès durée' : 0));
+  set('lic_used', used);
+  set('lic_remaining', remaining);
+  set('lic_sessions', Number(lic?.session_count || 0));
+
+  const warnBox = document.getElementById('lic_warning_box');
+  if(warnBox){
+    let html = 'La partie licence vient du serveur. La partie activité locale est alimentée automatiquement par les analyses sauvegardées dans votre navigateur.';
+    let border = 'rgba(255,255,255,.10)';
+    let bg = 'rgba(255,255,255,.04)';
+    if(lic?.mode === 'count' && typeof remainingNumeric === 'number'){
+      const low = remainingNumeric <= 5 || (purchased > 0 && remainingNumeric / Math.max(purchased,1) <= 0.15);
+      if(remainingNumeric <= 0){
+        html = '<b style="color:#ff7d8d">Alerte critique :</b> votre quota est épuisé. Renouvelez votre licence pour continuer.';
+        border = 'rgba(255,91,110,.35)'; bg = 'rgba(255,91,110,.10)';
+      }else if(low){
+        html = '<b style="color:#ffd46d">Alerte :</b> quota presque atteint. Il vous reste <b>' + remainingNumeric + '</b> capture(s).';
+        border = 'rgba(255,204,102,.35)'; bg = 'rgba(255,204,102,.10)';
+      }
+    }
+    if(statusLabel === 'EXPIRED'){
+      html = '<b style="color:#ff7d8d">Licence expirée :</b> l’accès premium est verrouillé tant que la licence n’est pas renouvelée.';
+      border = 'rgba(255,91,110,.35)'; bg = 'rgba(255,91,110,.10)';
+    }
+    warnBox.innerHTML = html;
+    warnBox.style.borderColor = border;
+    warnBox.style.background = bg;
+  }
+
+  const up = document.getElementById('dashLastUpdate');
+  if(up){
+    const localLast = total ? ('Local: ' + list[0].date) : 'Local: aucune donnée';
+    const serverLast = lic?.last_seen_at ? ('Serveur: ' + fmtDate(lic.last_seen_at)) : 'Serveur: —';
+    up.textContent = localLast + ' • ' + serverLast;
+  }
+}
+function exportCurrentAnalysis(){
+  if(!LAST_RES){ alert('Aucun résultat à exporter.'); return; }
+  const old = document.getElementById('printSheet');
+  if(old) old.remove();
+  const box = document.createElement('div');
+  box.id = 'printSheet';
+  box.innerHTML = `
+    <h1>Forex Capture Analyzer PRO — Rapport</h1>
+    <p><b>Date :</b> ${new Date().toLocaleString('fr-FR')}</p>
+    <p><b>Symbole :</b> ${LAST_RES.symbol || '—'} | <b>Timeframe :</b> ${LAST_RES.tfDetect || LAST_RES.tfWanted || '—'}</p>
+    <p><b>Décision :</b> ${LAST_RES.decision || '—'}</p>
+    <p><b>Trend :</b> ${LAST_RES.trend || '—'}</p>
+    <p><b>Confiance :</b> ${LAST_RES.conf!=null ? Math.round(LAST_RES.conf*100)+'%' : '—'} | <b>Risque :</b> ${LAST_RES.risk ?? '—'} | <b>Score :</b> ${LAST_RES.score ?? '—'}</p>
+    <p><b>Zone :</b> ${LAST_RES.zoneRec || '—'} | <b>Entrée :</b> ${LAST_RES.entryMode || '—'}</p>
+    <p><b>Conclusion :</b> ${LAST_RES.conclusionText || '—'}</p>
+    <p><b>Détail :</b> ${LAST_RES.reason || '—'}</p>`;
+  document.body.appendChild(box);
+  window.print();
+  setTimeout(()=>box.remove(), 500);
+}
+function enrichMeta(meta){
+  if(!meta) return meta;
+  const rawBuy = meta.decision==='ACHAT' ? 55 + Math.round((meta.score||0)*0.35) : (meta.trend==='UP' ? 28 + Math.round((meta.score||0)*0.18) : 12);
+  const rawSell = meta.decision==='VENTE' ? 55 + Math.round((meta.score||0)*0.35) : (meta.trend==='DOWN' ? 28 + Math.round((meta.score||0)*0.18) : 12);
+  const rawWait = meta.decision==='ATTENTE' ? 45 + Math.round((meta.risk||0)*0.25) : Math.max(8, 100 - Math.max(rawBuy, rawSell));
+  const sum = rawBuy + rawSell + rawWait || 1;
+  meta.probBuy = Math.round(rawBuy*100/sum);
+  meta.probSell = Math.round(rawSell*100/sum);
+  meta.probWait = Math.max(0, 100 - meta.probBuy - meta.probSell);
+  meta.readQuality = Math.max(0, Math.min(100, Math.round((1-(meta.noise||0))*100)));
+  meta.symbol = meta.symbol || inferSymbol();
+  meta.candlesInfo = getCandlesVisible() + ' / ' + getCandlesNeed(meta.tfWanted || 'H4');
+  return meta;
+}
+const _oldApplyResultsUI = applyResultsUI;
+applyResultsUI = function(meta){
+  if(meta) meta = enrichMeta(meta);
+  _oldApplyResultsUI(meta);
+  if(meta) saveCurrentAnalysis(meta);
+  renderDashboard();
+  renderReadAnalysisModal();
+};
+const _oldRenderResultsToModal = renderResultsToModal;
+renderResultsToModal = function(){
+  _oldRenderResultsToModal();
+  const r = LAST_RES;
+  if(!r) return;
+  const setText=(id,val)=>{ const el=document.getElementById(id); if(el) el.textContent=val; };
+  const setBar=(txtId,barId,val)=>{ const t=document.getElementById(txtId); const b=document.getElementById(barId); if(t) t.textContent = val + '%'; if(b) b.style.width = Math.max(0,Math.min(100,val)) + '%'; };
+  setBar('p_buy','p_buy_bar', r.probBuy||0);
+  setBar('p_sell','p_sell_bar', r.probSell||0);
+  setBar('p_wait','p_wait_bar', r.probWait||0);
+  setBar('g_conf_txt','g_conf', r.conf!=null ? Math.round(r.conf*100) : 0);
+  setBar('g_risk_txt','g_risk', r.risk||0);
+  setBar('g_score_txt','g_score', r.score||0);
+  setBar('g_read_txt','g_read', r.readQuality||0);
+  setText('r_symbol', r.symbol || '—');
+  setText('r_candles', r.candlesInfo || '—');
+};
+
+
+function generateHistoricalExamples(r){
+  const list = loadHistory().filter(x => x && x.id && (!r.symbol || x.symbol===r.symbol || x.symbol==='—')).slice(0, 12);
+  const similar = list.filter(x => x.decision===r.decision || x.trend===r.trend).slice(0,3);
+  if(similar.length){
+    return similar.map((x, i) =>
+      "Cas local " + (i+1) + " — " + (x.date || '—') + " : " +
+      (x.symbol || '—') + " " + (x.tf || '—') + ", décision " + (x.decision || '—') +
+      ", trend " + (x.trend || '—') + ", score " + (x.score ?? '—') +
+      ", risque " + (x.risk ?? '—') + "."
+    ).join("\n");
+  }
+  const archetypes = [];
+  if(r.decision==="ACHAT"){
+    archetypes.push("Schéma récurrent haussier : après une structure UP avec risque contenu, le marché consolide souvent brièvement avant une tentative de poursuite vers la prochaine zone d'offre.");
+  }
+  if(r.decision==="VENTE"){
+    archetypes.push("Schéma récurrent baissier : après une structure DOWN lisible, le marché effectue souvent un petit retracement avant une nouvelle poussée vers la zone de demande inférieure.");
+  }
+  if(r.decision==="ATTENTE"){
+    archetypes.push("Schéma récurrent neutre : quand le bruit est élevé ou que la structure est incomplète, les signaux se dégradent et le marché a tendance à piéger les entrées précoces.");
+  }
+  if(r.pullback){
+    archetypes.push("Cas de pullback : un retour dans la zone recommandée suivi d'une confirmation apporte généralement une meilleure entrée qu'une poursuite tardive.");
+  }
+  if(r.cassure && r.retest){
+    archetypes.push("Cas BOS + retest : une cassure suivie d'un retest propre renforce souvent la probabilité de continuation.");
+  }
+  return archetypes.join("\n");
+}
+
+function generateReadAnalysisContent(r){
+  if(!r){
+    return {
+      header:"Aucune analyse disponible pour le moment.",
+      badge:"—",
+      projectionBias:"—",
+      notification:"Téléversez une capture, lancez l'analyse puis revenez sur Lire analyse.",
+      reading:"Aucune lecture détaillée n'est disponible tant qu'aucune analyse n'a été calculée.",
+      projection:"Aucune projection disponible.",
+      instructions:"Aucune consigne disponible.",
+      examples:"Aucun cas similaire disponible.",
+      summary:"Le système attend une analyse valide avant de produire un commentaire détaillé."
+    };
+  }
+
+  const trendTxt = r.trend==="UP" ? "haussière" : (r.trend==="DOWN" ? "baissière" : "latérale");
+  const confPct = r.conf!=null ? Math.round(r.conf*100) : 0;
+  const riskPct = r.risk!=null ? r.risk : 0;
+  const score = r.score!=null ? r.score : 0;
+  const entryZone = r.zoneRec || "—";
+  const tf = r.tfDetect || r.tfWanted || "—";
+  const symbol = r.symbol || "—";
+
+  let notification = "";
+  let projectionBias = "Neutre";
+  let projection = "";
+
+  if(r.decision==="ACHAT"){
+    projectionBias = "Biais haussier";
+    notification = "Notification système : privilégier uniquement une entrée d'achat disciplinée, idéalement sur retour en zone " + entryZone + " ou après nouvelle confirmation. Éviter de poursuivre le prix si l'impulsion est déjà étendue.";
+    projection = "Projection probable : tant que la structure reste haussière et que le risque ne se dégrade pas, le marché peut chercher une continuation vers la prochaine zone d'offre. Un repli intermédiaire reste possible avant reprise.";
+  }else if(r.decision==="VENTE"){
+    projectionBias = "Biais baissier";
+    notification = "Notification système : privilégier uniquement une entrée de vente disciplinée, idéalement sur retour en zone " + entryZone + " ou après confirmation de rejet. Éviter d'anticiper un rebond sans signe clair de retournement.";
+    projection = "Projection probable : tant que la structure reste baissière et que la cassure conserve son avantage, le marché peut prolonger la baisse vers la prochaine zone de demande. Un pullback technique reste possible avant extension.";
+  }else{
+    projectionBias = "Biais d'attente";
+    notification = "Notification système : ne pas entrer maintenant. Le trader doit attendre une cassure nette, un retest propre ou une baisse du bruit avant toute décision.";
+    projection = "Projection probable : à court terme, le marché risque de rester hésitant, irrégulier ou piégeux jusqu'à apparition d'une structure plus lisible.";
+  }
+
+  const reading =
+    "Lecture du marché : " + symbol + " en " + tf + " présente actuellement une structure " + trendTxt + ". " +
+    "La confiance de lecture est évaluée à " + confPct + "%, pour un risque estimé à " + riskPct + "/100 et un score global de " + score + "/100. " +
+    "La zone recommandée est " + entryZone + " et le mode d'entrée conseillé est : " + (r.entryMode || "—") + ". " +
+    "Le système observe " +
+    (r.pullback ? "un pullback exploitable" : "pas de pullback suffisamment propre") + ", " +
+    (r.cassure ? "une cassure détectée" : "pas de cassure validée") + " et " +
+    (r.retest ? "un retest visible" : "pas de retest confirmé") + ".";
+
+  const instructions =
+    (r.decision==="ATTENTE"
+      ? "Consigne 1 : rester en observation.\nConsigne 2 : attendre une meilleure structure, une cassure claire ou une confirmation de pullback.\nConsigne 3 : ne pas forcer une entrée sur un marché bruité."
+      : "Consigne 1 : exécuter uniquement dans le sens " + r.decision + ".\nConsigne 2 : surveiller la réaction du prix dans la zone " + entryZone + ".\nConsigne 3 : si la confirmation disparaît ou si le risque augmente fortement, sortir du scénario et revenir en attente.") +
+    "\nConsigne 4 : conserver une gestion du risque stricte, car cette lecture reste probabiliste et non certaine.";
+
+  const examples = generateHistoricalExamples(r);
+
+  const summary =
+    "Synthèse : " + (r.conclusionText || "—") +
+    ". Probabilités actuelles — Achat " + (r.probBuy||0) + "%, Vente " + (r.probSell||0) + "%, Attente " + (r.probWait||0) + "%. " +
+    notification + " " + projection;
+
+  return {
+    header: symbol + " · " + tf + " · décision " + (r.decision || "—"),
+    badge: (r.decision || "—") + " · " + score + "/100",
+    projectionBias,
+    notification,
+    reading,
+    projection,
+    instructions,
+    examples,
+    summary
+  };
+}
+
+function renderReadAnalysisModal(){
+  if(!modalBack.classList.contains("show")) return;
+  const activeTitle = (modalTitle.textContent || "").toLowerCase();
+  if(!(activeTitle.includes("résultats") || activeTitle.includes("resultats") || activeTitle.includes("lire analyse"))) return;
+  const r = LAST_RES;
+  const content = generateReadAnalysisContent(r);
+  const setText = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  setText('readHeaderLine', content.header);
+  setText('readDecisionBadge', content.badge);
+  setText('ra_prob_buy', (r?.probBuy ?? 0) + '%');
+  setText('ra_prob_sell', (r?.probSell ?? 0) + '%');
+  setText('ra_prob_wait', (r?.probWait ?? 0) + '%');
+  setText('ra_projection_bias', content.projectionBias);
+  setText('ra_notification', content.notification);
+  setText('ra_market_reading', content.reading);
+  setText('ra_projection', content.projection);
+  setText('ra_instructions', content.instructions);
+  setText('ra_examples', content.examples);
+  setText('ra_summary', content.summary);
+}
+
+document.getElementById('btnHistory')?.addEventListener('click', openHistory);
+document.getElementById('btnOpenDashboard')?.addEventListener('click', openDashboard);
+document.getElementById('btnExport')?.addEventListener('click', exportCurrentAnalysis);
+updateHistoryTag();
+setZoomBadge();
+
+
+
+/* ---------- V26 SUPPORT ULTRA PRO ---------- */
+function currentSupportSummary(){
+  const r = window.LAST_RES || null;
+  const hasImg = !!window.HAS_IMG;
+  if(!r){
+    return {
+      decision:'—', trend:'—', score:0, risk:0, confidence:0,
+      text: hasImg
+        ? 'Capture chargée, mais aucune analyse n\'a encore été lancée.'
+        : 'Aucune capture chargée pour le moment.'
+    };
+  }
+  return {
+    decision:r.decision || '—',
+    trend:r.trend || '—',
+    score:Number(r.score||0),
+    risk:Number(r.risk||0),
+    confidence:Number(r.confidence||0),
+    text:`Décision=${r.decision||'—'} | Trend=${r.trend||'—'} | Score=${Number(r.score||0)}/100 | Risque=${Number(r.risk||0)}/100 | Confiance=${Number(r.confidence||0)}%`
+  };
+}
+function buildDiagnosticText(){
+  const s = currentSupportSummary();
+  let niveau = 'NORMAL';
+  if(s.risk >= 75) niveau = 'CRITIQUE';
+  else if(s.risk >= 55 || s.decision === 'ATTENTE') niveau = 'VIGILANCE';
+  else if(s.score >= 70 && s.risk <= 40 && /ACHAT|VENTE/.test(s.decision)) niveau = 'OPPORTUNITÉ';
+  const tips = [];
+  if(!window.HAS_IMG) tips.push('Charger une capture propre du graphique avant tout diagnostic.');
+  if(!window.LAST_RES) tips.push('Cliquer sur “Analyser” pour produire un rapport exploitable.');
+  if(window.LAST_RES){
+    if(s.risk >= 60) tips.push('Risque élevé : réduire l’exposition, éviter l’entrée immédiate.');
+    if(s.decision === 'ATTENTE') tips.push('Attendre une cassure confirmée ou un retest avant de trader.');
+    if(s.score >= 70 && s.risk <= 40) tips.push('Configuration lisible : privilégier une entrée disciplinée avec gestion du risque.');
+    if(s.trend === 'RANGE') tips.push('Marché en range : privilégier patience, confirmations et faux signaux filtrés.');
+  }
+  if(!tips.length) tips.push('Le système ne détecte pas d’urgence particulière pour le moment.');
+  return {
+    level:niveau,
+    text:[
+      `Niveau de diagnostic : ${niveau}`,
+      s.text,
+      'Recommandations :',
+      ...tips.map((t,i)=>`${i+1}. ${t}`)
+    ].join('\n')
+  };
+}
+function supportMessageBase(){
+  const d = buildDiagnosticText();
+  return `Bonjour Support Forex Capture Analyzer PRO.%0A%0A${encodeURIComponent(d.text)}`;
+}
+function downloadBlob(blob, filename){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1200);
+}
+function exportCanvasCapture(filename='support-capture.png'){
+  try{
+    const canvas = document.getElementById('cv');
+    if(!canvas) return false;
+    canvas.toBlob((blob)=>{ if(blob) downloadBlob(blob, filename); }, 'image/png');
+    return true;
+  }catch(e){ return false; }
+}
+function exportErrorReport(){
+  const d = buildDiagnosticText();
+  const report = [
+    'FOREX CAPTURE ANALYZER PRO — SUPPORT V26',
+    'Date: ' + new Date().toLocaleString(),
+    'UserAgent: ' + navigator.userAgent,
+    'Viewport: ' + window.innerWidth + 'x' + window.innerHeight,
+    'HasImage: ' + (!!window.HAS_IMG),
+    'AnalysisAvailable: ' + (!!window.LAST_RES),
+    '',
+    d.text,
+    '',
+    'Notes complémentaires: rapport généré localement depuis l’interface Support V26.'
+  ].join('\n');
+  downloadBlob(new Blob([report], {type:'text/plain;charset=utf-8'}), 'support-report-v26.txt');
+}
+function supportBotReply(msg){
+  const q = (msg || '').toLowerCase();
+  const d = buildDiagnosticText();
+  if(/sos|urgent|danger|perte|panic/.test(q)) return `Alerte prioritaire détectée. ${d.level === 'CRITIQUE' ? 'Le risque actuel est critique.' : 'Le système ne voit pas de risque critique immédiat.'} Réduisez la taille de position, vérifiez le stop et contactez le support via WhatsApp.`;
+  if(/diagnostic|analyse|graph|capture/.test(q)) return d.text.replace(/\n/g,'<br>');
+  if(/erreur|bug|probleme|bloc/.test(q)) return 'Rapport conseillé : utilisez “Rapport d’erreur” puis “Envoyer capture auto” pour transmettre les éléments au support.';
+  if(/whatsapp|contact|support/.test(q)) return 'Utilisez le bouton WhatsApp direct pour ouvrir immédiatement le support avec un message prérempli et votre diagnostic.';
+  return 'Assistant support V26 prêt. Je peux vous guider sur le diagnostic, la capture, le rapport d’erreur, ou l’action SOS trader.';
+}
+function addChatMessage(log, who, html){
+  if(!log) return;
+  const div = document.createElement('div');
+  div.className = 'chatMsg ' + who;
+  div.innerHTML = html;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+function refreshSupportPanel(){
+  const diagBox = document.getElementById('supportDiagText');
+  const quick = document.getElementById('supportQuickState');
+  if(diagBox) diagBox.textContent = buildDiagnosticText().text;
+  if(quick){
+    const s = currentSupportSummary();
+    quick.textContent = `Décision ${s.decision} • Trend ${s.trend} • Score ${s.score}/100 • Risque ${s.risk}/100`;
+  }
+}
+const _openModalV26 = openModal;
+openModal = function(title, templateId){
+  _openModalV26(title, templateId);
+  if(templateId === 'tpl_support_v26') wireSupportV26();
+};
+function wireSupportV26(){
+  refreshSupportPanel();
+  document.getElementById('btnSupportWhatsApp')?.addEventListener('click', ()=>{
+    const url = 'https://wa.me/2250777041790?text=' + supportMessageBase();
+    window.open(url, '_blank');
+  });
+  document.getElementById('btnSupportCapture')?.addEventListener('click', ()=>{
+    exportCanvasCapture('capture-support-v26.png');
+    const url = 'https://wa.me/2250777041790?text=' + supportMessageBase() + encodeURIComponent('\n\nCapture exportée. Merci de la joindre au message WhatsApp.');
+    window.open(url, '_blank');
+  });
+  document.getElementById('btnSupportPage')?.addEventListener('click', ()=>{
+    window.open('https://forexanalyzer.e-monsite.com/pages/contact-support.html', '_blank');
+  });
+  document.getElementById('btnSupportDiagnostic')?.addEventListener('click', ()=>{
+    refreshSupportPanel();
+  });
+  document.getElementById('btnSupportReport')?.addEventListener('click', ()=>{
+    exportErrorReport();
+    const box = document.getElementById('supportDiagText');
+    if(box) box.textContent = 'Rapport d’erreur généré en fichier .txt. Vous pouvez maintenant l’envoyer au support.';
+  });
+  document.getElementById('btnSupportSOS')?.addEventListener('click', ()=>{
+    const s = currentSupportSummary();
+    const urgent = encodeURIComponent(`SOS TRADER
+Décision=${s.decision}
+Trend=${s.trend}
+Score=${s.score}/100
+Risque=${s.risk}/100
+Confiance=${s.confidence}%
+Merci de traiter cette urgence.`);
+    window.open('https://wa.me/2250777041790?text=' + urgent, '_blank');
+    const box = document.getElementById('supportDiagText');
+    if(box) box.textContent = 'Mode SOS trader lancé. Le canal prioritaire WhatsApp a été ouvert.';
+  });
+}
+
+</script>
+
+
+<template id="tpl_guide">
+  <div class="guideWrap">
+    <div class="row" style="justify-content:space-between; align-items:flex-start; gap:10px">
+      <div>
+        <div class="note"><b>Guide d’utilisation — Forex Capture Analyzer PRO (v19)</b></div>
+        <div class="note">Lecture rapide + exemples. Le contenu défile (popup roulant).</div>
+      </div>
+      <a class="btn ok" id="btnWhatsAppSupport" href="#" target="_blank" rel="noopener noreferrer">
+        Contact support (WhatsApp)
+      </a>
+    </div>
+
+    <div class="hr"></div>
+
+    <h2>1) Démarrage rapide</h2>
+    <ol>
+      <li><b>Téléverser</b> une capture (ou glisser-déposer sur le canvas).</li>
+      <li>Cliquer <b>Analyser</b>.</li>
+      <li>Ouvrir <b>Résultats</b> pour voir la décision + Score + Risque.</li>
+      <li>Activer/Désactiver les overlays : <b>Trendline, Zones, Limit, TP, Bands</b>.</li>
+    </ol>
+
+    <div class="callout">
+      <b>Règle PRO :</b> GO seulement si <b>Score ≥ 70</b>.  
+      Si <b>Risque ≥ 60</b> ou Trend = <b>RANGE</b> → <b>ATTENTE</b>.
+    </div>
+
+    <h2>2) Les 3 zones de l’interface</h2>
+    <h3>A. Bannière (en haut)</h3>
+    <ul>
+      <li><b>LIVE + Réglage bougies</b> : mode analyse en temps réel (partage d’écran).</li>
+      <li><b>Résultats</b> : tableau complet (décision, structure, pullback, cassure, retest, etc.).</li>
+      <li><b>Guide</b> : cette aide.</li>
+    </ul>
+
+    <h3>B. Contrôle — Upload / LIVE / Analyse</h3>
+    <ul>
+      <li><b>Téléverser</b> : charger une capture.</li>
+      <li><b>Analyser</b> : lance l’analyse sur l’image ou sur le LIVE.</li>
+      <li><b>Ajuster</b> : recadre/fit le canvas.</li>
+      <li><b>Reset</b> : efface capture + résultats.</li>
+    </ul>
+
+    <h3>C. Contrôles Overlays (à côté des boutons)</h3>
+    <ul>
+      <li><b>Trendline</b> : affiche la ligne de tendance.</li>
+      <li><b>Zones</b> : affiche Demand/Supply + zone recommandée.</li>
+      <li><b>Limit</b> : affiche la limite (proxy) / stop visuel.</li>
+      <li><b>TP</b> : affiche take profit raisonnable (proxy).</li>
+      <li><b>Bands</b> : bandes d’analyse verticales.</li>
+    </ul>
+
+    <div class="imgPh"><b>Capture (exemple)</b> : tendance + zones + TP/Limit affichés.  
+    <br/>➡️ Astuce : après analyse, active/désactive les overlays pour mieux lire le graphique.</div>
+
+    <h2>3) Comprendre les résultats</h2>
+    <ul>
+      <li><b>Décision</b> : ACHAT / VENTE / ATTENTE.</li>
+      <li><b>Trend</b> : UP / DOWN / RANGE.</li>
+      <li><b>Score</b> : qualité globale de la config (0–100).</li>
+      <li><b>Risque</b> : danger estimé (0–100).</li>
+      <li><b>Structure</b> : OK / PULLBACK / —</li>
+      <li><b>Pullback</b>, <b>Cassure</b>, <b>Retest</b>, <b>Confirmation PB</b></li>
+      <li><b>Zone (Demand/Supply)</b> : zone repérée + recommandation.</li>
+    </ul>
+
+    <div class="imgPh"><b>Capture (exemple)</b> : fenêtre “Résultats” ouverte avec Score/Risque.  
+    <br/>➡️ Tu peux copier la ligne <b>Conclusion</b> pour l’envoyer à ton équipe.</div>
+
+    <h2>4) Exemples concrets</h2>
+
+    <h3>Exemple 1 — ACHAT sécurisé</h3>
+    <ul>
+      <li>Trend = UP, Score = 82, Risque = 28</li>
+      <li>Zone = RETEST, Confirmation PB = OUI</li>
+      <li>Conclusion : <b>ACHAT. ENTRÉE SÉCURISÉE | Zone=RETEST | Score=82/100 | Risque=28/100</b></li>
+    </ul>
+
+    <h3>Exemple 2 — VENTE standard</h3>
+    <ul>
+      <li>Trend = DOWN, Score = 74, Risque = 45</li>
+      <li>Conclusion : <b>VENTE. ENTRÉE STANDARD | Zone=REJET | Score=74/100 | Risque=45/100</b></li>
+    </ul>
+
+    <h3>Exemple 3 — ATTENTE</h3>
+    <ul>
+      <li>Trend = RANGE ou Risque ≥ 60 ou Score &lt; 70</li>
+      <li>Conclusion : <b>ATTENTE</b> (marché instable)</li>
+    </ul>
+
+    <div class="callout">
+      <b>Conseils de capture :</b>
+      <ul>
+        <li>Graphique net (pas flou).</li>
+        <li>Assez de bougies visibles (H1/H4 recommandé).</li>
+        <li>Évite les zones trop compressées.</li>
+      </ul>
+    </div>
+
+    <h2>5) Support</h2>
+    <p>Besoin d’aide (installation, usage, amélioration) ? Clique sur <b>Contact support (WhatsApp)</b>.</p>
+  </div>
+</template>
+<!-- ================= DISCLAIMER MODAL (MANDATORY) ================= -->
+<div id="disclaimerOverlay" style="
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.85);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:99999;
+">
+  
+  <div style="
+  width:min(900px,92%);
+  max-height:85vh;
+  background:#111;
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:18px;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  ">
+    <h2 style="margin-top:0">Clause de Non‑Responsabilité</h2>
+    <div style="overflow:auto; flex:1; font-size:13px; line-height:1.65; padding-right:8px;">
+      <pre style="margin:0; white-space:pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; color:rgba(255,255,255,.92);">📜 CLAUSE DE NON-RESPONSABILITÉ
+Forex Capture Analyzer PRO
+________________________________________
+1️⃣ Nature du logiciel
+Le logiciel Forex Capture Analyzer PRO est un outil d’aide à l’analyse technique des marchés financiers.
+Il fournit des indications basées sur des modèles algorithmiques, des structures graphiques et des probabilités statistiques destinées à assister l’utilisateur dans sa lecture des marchés.
+Le logiciel ne constitue en aucun cas :
+•	Un robot de trading automatique
+•	Un service de gestion de portefeuille
+•	Un conseil en investissement personnalisé
+•	Une recommandation financière réglementée
+•	Une garantie de performance
+Il ne remplace pas le jugement, l’expérience ou la responsabilité individuelle de l’utilisateur.
+________________________________________
+2️⃣ Absence de garantie de gains
+Les marchés financiers sont par nature volatils et comportent un risque élevé de perte en capital pouvant entraîner la perte partielle ou totale des fonds investis.
+L’éditeur ne garantit en aucun cas :
+•	La réalisation de profits
+•	L’absence de pertes
+•	La précision absolue des analyses
+•	La fiabilité permanente des résultats
+•	La réussite d’une opération financière
+L’utilisateur reconnaît expressément que toute activité de trading comporte un risque significatif.
+________________________________________
+3️⃣ Responsabilité exclusive de l’utilisateur
+L’utilisateur reconnaît que :
+•	Toute décision de trading est prise sous sa seule et entière responsabilité.
+•	Il agit de manière indépendante, en pleine connaissance des risques.
+•	Il assume intégralement les conséquences financières, directes ou indirectes, de ses opérations.
+En conséquence, l’éditeur, ses dirigeants, partenaires, distributeurs ou représentants ne pourront être tenus responsables :
+•	Des pertes financières subies
+•	Des pertes indirectes ou consécutives
+•	Des dommages matériels ou immatériels
+•	Des décisions prises sur la base des analyses du logiciel
+•	D’un usage inapproprié ou incorrect du logiciel
+________________________________________
+4️⃣ Usage éducatif et informatif
+Le logiciel est destiné exclusivement à un usage :
+•	Éducatif
+•	Informatif
+•	Stratégique
+•	Analytique
+Il ne remplace ni :
+•	Une formation professionnelle en finance
+•	Une gestion de risque rigoureuse
+•	Un accompagnement financier certifié
+•	Un conseil délivré par un professionnel agréé
+________________________________________
+5️⃣ Limitation de responsabilité
+En utilisant le logiciel, l’utilisateur accepte expressément que :
+•	La responsabilité totale et maximale de l’éditeur, pour quelque cause que ce soit, soit strictement limitée au montant effectivement payé pour la licence du logiciel.
+•	Aucune indemnité, réparation ou compensation supérieure ne pourra être réclamée à l’éditeur.
+Cette limitation s’applique dans toute la mesure permise par la loi applicable.
+________________________________________
+6️⃣ Acceptation
+L’installation, l’activation ou l’utilisation du logiciel implique :
+L’acceptation pleine, entière et sans réserve des présentes conditions.
+L’utilisateur reconnaît avoir pris connaissance des risques inhérents au trading et utiliser le logiciel en toute conscience et responsabilité.</pre>
+    </div>
+
+    <div style="margin-top:15px; display:flex; gap:10px; justify-content:flex-end; align-items:center;">
+      <button id="acceptDisclaimer" style="
+      padding:10px 18px;
+      border-radius:10px;
+      border:none;
+      font-weight:bold;
+      cursor:pointer;
+      ">
+      J’accepte
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<template id="tpl_support_v26">
+  <div>
+    <div class="row" style="justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap">
+      <div>
+        <div class="supportHeadTitle">Centre Support Premium V28</div>
+        <div class="supportSub">Support premium type TradingView / SaaS fintech : diagnostic rapide, capture, rapport d’erreur et urgence trader.</div>
+      </div>
+      <div class="chip" id="supportQuickState">Décision — • Trend — • Score 0/100 • Risque 0/100</div>
+    </div>
+
+    <div class="supportGrid">
+      <div class="supportPanel">
+        <div class="supportHeadTitle">Actions support intelligentes</div>
+        <div class="supportSub">Chaque action exploite l’état actuel du graphique et de l’analyse présente dans l’interface.</div>
+
+        <div class="supportActionGrid">
+          <button class="btn ok supportActionBtn" id="btnSupportWhatsApp">
+            WhatsApp direct
+            <small>Ouvre le support avec message prérempli</small>
+          </button>
+          <button class="btn ok supportActionBtn" id="btnSupportCapture">
+            Envoyer capture auto
+            <small>Exporte la capture puis ouvre WhatsApp</small>
+          </button>
+          <button class="btn supportActionBtn" id="btnSupportDiagnostic">
+            Diagnostic auto
+            <small>Analyse la situation actuelle du graphique</small>
+          </button>
+          <button class="btn supportActionBtn" id="btnSupportReport">
+            Rapport d’erreur
+            <small>Génère un fichier .txt prêt à transmettre</small>
+          </button>
+          <button class="btn supportActionBtn" id="btnSupportPage">
+            Page support
+            <small>Ouvre le centre support officiel</small>
+          </button>
+          <button class="btn sosBtn supportActionBtn" id="btnSupportSOS">
+            SOS trader
+            <small>Canal d’urgence prioritaire</small>
+          </button>
+        </div>
+
+        <div class="supportStatus" id="supportDiagText">Aucun diagnostic généré pour le moment.</div>
+      </div>
+    </div>
+  </div>
+</template>
+
+
+<script>
+(function(){
+  const API_BASE = ((window.FXA_CONFIG && window.FXA_CONFIG.API_BASE) || '').replace(/\/$/, '');
+  function apiUrl(path){ return API_BASE ? (API_BASE + path) : path; }
+  const SESSION_KEY = 'FXA_V28_SESSION';
+  let __fxaSession = null;
+
+  function getSession(){
+    if(__fxaSession) return __fxaSession;
+    try{ __fxaSession = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }catch(e){ __fxaSession = null; }
+    return __fxaSession;
+  }
+
+  function forceCloseApp(message){
+    const msg = message || 'Votre licence a expiré ou votre quota de captures est épuisé.';
+    try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+    const safeMsg = String(msg).replace(/</g,'&lt;');
+    try{
+      document.body.innerHTML = `
+        <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;background:radial-gradient(1100px 600px at 12% 10%, rgba(22,217,199,.14), transparent 58%),radial-gradient(980px 580px at 88% 10%, rgba(255,212,0,.10), transparent 55%),linear-gradient(145deg,#071c21 0%,#0b252b 42%,#07151a 100%);color:#fff;font-family:Inter,Arial,sans-serif">
+          <div style="width:min(760px,100%);border:1px solid rgba(255,255,255,.12);border-radius:26px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));box-shadow:0 26px 90px rgba(0,0,0,.45)">
+            <div style="padding:30px 30px 18px;background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0))">
+              <div style="width:72px;height:72px;border-radius:22px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(135deg, rgba(255,91,110,.28), rgba(255,212,0,.18), rgba(136,167,255,.18));box-shadow:0 14px 38px rgba(0,0,0,.28)"></div>
+              <div style="margin-top:18px;display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,91,110,.22);background:rgba(255,91,110,.10);font-size:12px;font-weight:900;letter-spacing:.4px">ACCÈS PREMIUM BLOQUÉ</div>
+              <div style="margin-top:14px;font-size:34px;line-height:1.1;font-weight:1000;color:#ffd400">Licence expirée</div>
+              <div style="height:1px;background:rgba(255,255,255,.12);margin:16px 0 18px"></div>
+              <div style="font-size:17px;line-height:1.7;color:rgba(255,255,255,.90)">Votre licence <b>Forex Capture Analyzer PRO</b> est arrivée à expiration.<br>Pour continuer à utiliser toutes les fonctionnalités d’analyse avancée, veuillez renouveler votre licence.</div>
+            </div>
+            <div style="padding:0 30px 30px">
+              <div style="padding:16px 18px;border-radius:18px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.18);font-size:14px;line-height:1.6;color:rgba(255,255,255,.84)"><b>Détail du verrouillage :</b> ${safeMsg}</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:18px">
+                <a href="https://forexanalyzer.e-monsite.com/pages/tarifs.html" style="text-decoration:none;display:flex;align-items:center;justify-content:center;min-height:58px;border-radius:16px;padding:14px 16px;background:linear-gradient(180deg, rgba(255,212,0,.26), rgba(255,212,0,.10));border:1px solid rgba(255,212,0,.36);color:#fff;font-weight:1000">Renouveler ma licence</a>
+                <a href="https://forexanalyzer.e-monsite.com/pages/contact-support.html" style="text-decoration:none;display:flex;align-items:center;justify-content:center;min-height:58px;border-radius:16px;padding:14px 16px;background:linear-gradient(180deg, rgba(22,217,199,.24), rgba(22,217,199,.10));border:1px solid rgba(22,217,199,.34);color:#fff;font-weight:1000">Contacter le support</a>
+              </div>
+              <div style="margin-top:16px;font-size:12px;color:rgba(255,255,255,.62);text-align:center">Redirection automatique vers la boutique dans quelques secondes…</div>
+            </div>
+          </div>
+        </div>`;
+    }catch(e){}
+    setTimeout(()=>{ try{ location.href = 'https://forexanalyzer.e-monsite.com/pages/tarifs.html'; }catch(e){} }, 4500);
+  }
+
+  async function postLicenseEvent(eventType, payload){
+    const sess = getSession();
+    if(!sess || !sess.token || !sess.deviceId) return null;
+    try{
+      const res = await fetch(apiUrl('/api/license/report'), {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ token:sess.token, deviceId:sess.deviceId, type:eventType, detail: payload || {} })
+      });
+      const data = await res.json().catch(()=>null);
+      if(data && data.license){
+        window.FXA_LICENSE = data.license;
+        try{ renderDashboard(); }catch(e){}
+      }
+      if(!res.ok){
+        const msg = (data && (data.error || data.message)) || 'Accès fermé : durée ou quota atteint.';
+        if(/quota|expir|crédits|captures/i.test(msg)){
+          forceCloseApp(msg);
+        }
+      }
+      return data;
+    }catch(e){ return null; }
+  }
+
+  async function validateSession(){
+    const sess = getSession();
+    if(!sess || !sess.token || !sess.deviceId){
+      alert('Session introuvable. Veuillez réactiver votre licence.');
+      location.href = 'index.html';
+      return;
+    }
+    try{
+      const res = await fetch(apiUrl('/api/license/validate'), {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ token:sess.token, deviceId:sess.deviceId })
+      });
+      const data = await res.json().catch(()=>({ ok:false, error:'Réponse serveur invalide.' }));
+      if(!res.ok || !data.ok){
+        const reason = data?.error || 'Session invalide.';
+        if(/quota|expir|crédits|captures/i.test(reason)){
+          forceCloseApp(reason);
+          return;
+        }
+        throw new Error(reason);
+      }
+      window.FXA_LICENSE = data.license || null;
+      try{ renderDashboard(); }catch(e){}
+    }catch(err){
+      alert(err.message || 'Session invalide. Veuillez réactiver votre licence.');
+      localStorage.removeItem(SESSION_KEY);
+      location.href = 'index.html';
+    }
+  }
+
+  function doDashboardLogout(){
+    try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+    try{ localStorage.removeItem('FXA_ADMIN_MODE_V28'); }catch(e){}
+    try{ localStorage.removeItem('FXA_ADMIN_TOKEN_V28'); }catch(e){}
+    location.href = 'index.html';
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    validateSession();
+  });
+  setInterval(()=>{ try{ validateSession(); }catch(e){} }, 30000);
+
+  document.addEventListener('click', function(e){
+    const el = e.target.closest('button,[id]');
+    if(!el) return;
+    const id = el.id || '';
+    if(id === 'btnDashboardLogout'){
+      e.preventDefault();
+      doDashboardLogout();
+      return;
+    }
+    if(id === 'btnAnalyze'){
+      postLicenseEvent('analysis_run', { source:'ui', ts: new Date().toISOString() });
+    }else if(id === 'btnSupportReport'){
+      postLicenseEvent('error_report', { source:'support', ts: new Date().toISOString() });
+    }else if(id === 'btnSupportSOS'){
+      postLicenseEvent('sos_report', { source:'support', ts: new Date().toISOString() });
+    }
+  }, true);
+})();
+</script>
+
+</body>
+</html>
