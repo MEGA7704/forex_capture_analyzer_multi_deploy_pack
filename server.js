@@ -2,9 +2,10 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs/promises');
 const crypto = require('crypto');
+const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 const BASE_DATA_DIR = process.env.DATA_DIR || (process.env.RENDER_DISK_PATH ? path.join(process.env.RENDER_DISK_PATH, 'fxa-data') : path.join(__dirname, 'data'));
 const LICENSE_FILE = path.join(BASE_DATA_DIR, 'licenses.json');
 const EVENTS_FILE = path.join(BASE_DATA_DIR, 'events.json');
@@ -27,14 +28,12 @@ const githubCache = {
   remoteShaByPath: {}
 };
 
+app.use(cors({
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-key']
+}));
 app.use(express.json({ limit: '2mb' }));
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'content-type, authorization');
-  if (req.method === 'OPTIONS') return res.status(204).end();
-  next();
-});
 
 function normalizeKey(key = '') { return String(key).trim().toUpperCase(); }
 function nowIso() { return new Date().toISOString(); }
