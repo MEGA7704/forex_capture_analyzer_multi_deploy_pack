@@ -553,5 +553,21 @@
       "source": "ui",
       "ts": "2026-03-16T01:15:39.294Z"
     }
+  },
+  {
+    "id": "evt_1773625709689_m04ukp",
+    "created_at": "2026-03-16T01:48:29.688Z",
+    "event_type": "license_activation",
+    "license_key": "FXA-G2VN-6JGH-5CR7-VA3Z",
+    "device_id": "PC-A795C6DD903B",
+    "details": {
+      "clientMeta": {
+        "ua": "Mozilla/5.0 (Windows NT 6.1; rv:109.0) Gecko/20100101 Firefox/115.0",
+        "lang": "fr",
+        "platform": "Win32",
+        "source": "cloudflare-pages",
+        "appVersion": "V28"
+      }
+    }
   }
 ]
