@@ -677,5 +677,21 @@
       "source": "ui",
       "ts": "2026-03-16T17:07:29.007Z"
     }
+  },
+  {
+    "id": "evt_1773682389329_srgz7f",
+    "created_at": "2026-03-16T17:33:09.328Z",
+    "event_type": "license_login",
+    "license_key": "DEMO-JDE4-EYJO-PZ70",
+    "device_id": "PC-DC7781F2579F",
+    "details": {
+      "clientMeta": {
+        "ua": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
+        "lang": "fr",
+        "platform": "Win32",
+        "source": "cloudflare-pages",
+        "appVersion": "V28"
+      }
+    }
   }
 ]
