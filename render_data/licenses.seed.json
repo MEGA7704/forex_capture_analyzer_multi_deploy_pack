@@ -24090,7 +24090,7 @@
       "plan_label": "Démo 10 captures",
       "mode": "count",
       "analysis_limit": 10,
-      "analysis_count": 1,
+      "analysis_count": 2,
       "device_id": "PC-DC7781F2579F",
       "device_locked": true,
       "live_allowed": false,
@@ -24109,9 +24109,9 @@
       "sos_reports": 0,
       "piracy_flags": 0,
       "duration_days": 0,
-      "analyses_remaining": 9,
+      "analyses_remaining": 8,
       "activated_at": "2026-03-16T17:04:19.483Z",
-      "last_seen_at": "2026-03-16T17:05:54.878Z",
+      "last_seen_at": "2026-03-16T17:06:10.869Z",
       "last_ip_hash": "ip_160_154"
     }
   ]
