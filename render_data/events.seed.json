@@ -655,5 +655,16 @@
       "source": "ui",
       "ts": "2026-03-16T17:06:09.525Z"
     }
+  },
+  {
+    "id": "evt_1773680779470_w8x5ap",
+    "created_at": "2026-03-16T17:06:19.469Z",
+    "event_type": "analysis_run",
+    "license_key": "DEMO-JDE4-EYJO-PZ70",
+    "device_id": "PC-DC7781F2579F",
+    "details": {
+      "source": "ui",
+      "ts": "2026-03-16T17:06:16.414Z"
+    }
   }
 ]
