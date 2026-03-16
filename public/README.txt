@@ -1,23 +1,26 @@
+PACK DEMO ULTRA PROFESSIONNEL — FOREX CAPTURE ANALYZER PRO
 
-PACK DEMO - Forex Capture Analyzer PRO
+Contenu du ZIP
+1. demo.html
+2. server.js
 
-Contenu :
-demo.html
+Ce que fait ce pack
+- page Démo avec design identique à votre interface de connexion
+- compteur affiché à 10 captures restantes
+- génération de clé démo sécurisée par le backend
+- blocage à un seul PC
+- bouton "Essayer maintenant"
 
-Fonction :
-Page permettant aux utilisateurs de générer une clé d'essai.
+Important
+Le fichier server.js contient une nouvelle route :
+POST /api/license/demo/generate
 
-Caractéristiques :
-- clé démo générée automatiquement
-- destinée à être utilisée sur la page connexion
-- licence limitée à 10 captures
-- live non autorisé
+Comment installer
+1. remplacez votre ancien server.js par celui du ZIP
+2. placez demo.html dans votre dossier public
+3. redéployez Render
+4. ajoutez dans index.html un bouton :
+   <a class="btn primary" href="demo.html">Démo</a>
 
-Installation :
-1. placer demo.html dans votre site
-2. ajouter un bouton "Démo" dans index.html
-3. bouton => lien vers demo.html
-
-Exemple :
-<a href="demo.html">Demo</a>
-
+Lien attendu après déploiement
+https://votre-domaine/demo.html

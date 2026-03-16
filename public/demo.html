@@ -1,117 +1,501 @@
-
 <!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Démo — Forex Capture Analyzer PRO</title>
+<title>Démo — Forex Capture Analyzer PRO V28 ULTRA</title>
 <style>
-body{
-font-family:Arial,Helvetica,sans-serif;
-background:#0c1f26;
-color:#fff;
-margin:0;
-display:flex;
-align-items:center;
-justify-content:center;
-min-height:100vh;
+:root{
+  --bg1:#071c21;
+  --bg2:#0b2b31;
+  --bg3:#0f3a3f;
+  --gold:#ffee00;
+  --cyan:#16d9c7;
+  --text:#eef7f8;
+  --muted:rgba(255,255,255,.74);
+  --line:rgba(255,255,255,.12);
 }
-.container{
-max-width:700px;
-background:#132f38;
-padding:40px;
-border-radius:12px;
-box-shadow:0 10px 40px rgba(0,0,0,.4);
-text-align:center;
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(720px 420px at 12% 8%, rgba(27,179,180,.18) 0%, transparent 62%),
+    radial-gradient(620px 360px at 88% 9%, rgba(156,179,49,.16) 0%, transparent 60%),
+    linear-gradient(180deg, #13454f 0%, #0c3741 35%, #082a33 68%, #061f27 100%);
+  min-height:100vh;
+}
+.page{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:40px 20px 30px;
+}
+.top-brand{
+  width:100%;
+  max-width:980px;
+  text-align:center;
+  margin-top:2px;
+  margin-bottom:18px;
+}
+.brand-title{
+  margin:0;
+  font-size:38px;
+  line-height:1.1;
+  font-weight:1000;
+  color:#f4f4f4;
+  letter-spacing:.3px;
+  text-shadow:0 2px 0 rgba(0,0,0,.12);
+}
+.brand-sub{
+  margin-top:6px;
+  color:#fff000;
+  font-size:25px;
+  font-style:italic;
+  font-family:"Brush Script MT","Segoe Script","Lucida Handwriting",cursive;
+  text-shadow:0 0 10px rgba(255,238,0,.18);
+}
+.panel{
+  width:min(820px, 100%);
+  border-radius:35px;
+  border:1px solid rgba(255,255,255,.10);
+  background:
+    linear-gradient(180deg, rgba(129,152,161,.28) 0%, rgba(67,95,106,.28) 26%, rgba(34,60,70,.52) 58%, rgba(21,42,50,.78) 100%);
+  box-shadow:
+    0 25px 80px rgba(0,0,0,.38),
+    inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  overflow:hidden;
+}
+.hero{
+  padding:20px 24px 12px;
+  text-align:center;
 }
 h1{
-color:#ffee00;
-margin-bottom:10px;
+  margin:0;
+  font-size:30px;
+  line-height:1.1;
+  color:var(--gold);
+  text-align:center;
+  font-weight:1000;
+  letter-spacing:.2px;
+  text-shadow:0 1px 0 rgba(0,0,0,.15);
+}
+.sep{
+  height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+  margin:14px auto 16px;
+  width:100%;
 }
 p{
-line-height:1.6;
-color:#e8f4f6;
+  margin:0;
+  color:#ffffff;
+  line-height:1.55;
+  font-size:15px;
+  text-align:center;
 }
-.features{
-text-align:left;
-margin:20px 0;
+.content{
+  padding:10px 24px 28px;
+  display:grid;
+  grid-template-columns:1.15fr .85fr;
+  gap:18px;
 }
-button{
-background:#16d9c7;
-border:none;
-padding:14px 22px;
-border-radius:8px;
-font-size:16px;
-font-weight:bold;
-cursor:pointer;
+.card{
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:20px;
+  background:rgba(0,0,0,.16);
+  padding:18px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
 }
-button:hover{
-opacity:.9;
+.card h2{
+  margin:0 0 10px;
+  color:#fff;
+  font-size:18px;
+}
+.list{
+  display:grid;
+  gap:10px;
+}
+.item{
+  padding:12px 14px;
+  border-radius:14px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  font-size:14px;
+  line-height:1.45;
+}
+.good{color:#b9ffd7}
+.bad{color:#ffd2a3}
+.kpi{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:12px;
+}
+.kpi .box{
+  padding:14px;
+  border-radius:16px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  text-align:center;
+}
+.kpi .num{
+  font-size:28px;
+  font-weight:1000;
+  color:var(--gold);
+}
+.kpi .label{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:4px;
+}
+.actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:16px;
+}
+button,a.btn{
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:48px;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.14);
+  font-weight:1000;
+  font-size:14px;
+  cursor:pointer;
+  transition:all .22s ease;
+  color:#fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 8px 18px rgba(0,0,0,.14);
+}
+button:hover,a.btn:hover{
+  transform:translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 12px 24px rgba(0,0,0,.22);
+}
+.primary{
+  background:linear-gradient(180deg, rgba(41,187,190,.55), rgba(24,132,138,.45));
+  border-color:rgba(22,217,199,.42);
+}
+.warn{
+  background:linear-gradient(180deg, rgba(176,173,65,.58), rgba(114,121,55,.42));
+  border-color:rgba(255,212,0,.25);
+}
+.msg{
+  margin-top:14px;
+  padding:14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(0,0,0,.18);
+  font-size:13px;
+  text-align:center;
+  line-height:1.5;
+  color:rgba(255,255,255,.86);
+  min-height:68px;
 }
 .keybox{
-margin-top:20px;
-padding:15px;
-background:#0a1a20;
-border-radius:8px;
-font-weight:bold;
+  margin-top:14px;
+  padding:16px;
+  border-radius:16px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(22,217,199,.25);
+  display:none;
+}
+.keyline{
+  font-size:24px;
+  font-weight:1000;
+  color:var(--cyan);
+  letter-spacing:1px;
+  text-align:center;
+  word-break:break-word;
+}
+.badge-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+  margin-top:14px;
+}
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+  font-size:11px;
+  font-weight:1000;
+  white-space:nowrap;
+}
+.small{
+  font-size:12px;
+  text-align:center;
+  color:rgba(255,255,100,.72);
+  margin-top:14px;
+  line-height:1.45;
+}
+.footer-line{
+  margin-top:24px;
+  height:1px;
+  background:rgba(255,255,255,.08);
+}
+.footer-row{
+  padding:14px 10px 0;
+  text-align:center;
+  color:rgba(255,255,255,.74);
+  font-size:13.5px;
+}
+@media(max-width:780px){
+  .content{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .page{padding:14px 14px 24px}
+  .brand-title{font-size:25px}
+  .brand-sub{font-size:16px}
+  .hero,.content{padding-left:16px;padding-right:16px}
+  h1{font-size:25px}
+  .actions{grid-template-columns:1fr}
+  .keyline{font-size:19px}
 }
 </style>
 </head>
 <body>
+  <div class="page">
+    <div class="top-brand">
+      <div class="brand-title">Forex Capture Analyzer PRO</div>
+      <div class="brand-sub">Analyser - Anticiper - Agir avec précision</div>
+    </div>
 
-<div class="container">
+    <div class="panel">
+      <div class="hero">
+        <h1>Démo Ultra Professionnelle</h1>
+        <div class="sep"></div>
+        <p>Découvrez gratuitement la puissance du système avant d’acheter votre licence Premium. La clé d’essai est générée par le backend, liée à un seul PC et limitée à 10 captures.</p>
+      </div>
 
-<h1>Essayez Forex Capture Analyzer PRO</h1>
+      <div class="content">
+        <div class="card">
+          <h2>Pourquoi essayer la Démo ?</h2>
+          <div class="list">
+            <div class="item"><span class="good">✔</span> Même moteur d’analyse que les licences Premium.</div>
+            <div class="item"><span class="good">✔</span> Activation automatique et sécurisée par le serveur.</div>
+            <div class="item"><span class="good">✔</span> Liaison stricte à un seul ordinateur activateur.</div>
+            <div class="item"><span class="bad">✖</span> Service LIVE désactivé pour les licences limitées en captures.</div>
+            <div class="item"><span class="bad">✖</span> Blocage automatique après épuisement des 10 captures.</div>
+          </div>
 
-<p>
-Forex Capture Analyzer PRO est un système intelligent capable d’analyser
-une capture d’écran de graphique et d’aider le trader à mieux lire la
-structure du marché.
-</p>
+          <div class="kpi">
+            <div class="box">
+              <div class="num" id="capturesLeft">10</div>
+              <div class="label">Captures restantes</div>
+            </div>
+            <div class="box">
+              <div class="num">1</div>
+              <div class="label">PC autorisé</div>
+            </div>
+          </div>
 
-<div class="features">
-<b>Licence d'essai gratuite :</b>
-<ul>
-<li>Activation sur un seul PC</li>
-<li>10 captures maximum</li>
-<li>Mêmes fonctions d’analyse que les licences Premium</li>
-<li>Service LIVE désactivé</li>
-<li>Blocage automatique après le quota</li>
-</ul>
-</div>
+          <div class="badge-row">
+            <span class="badge">Plan : DÉMO 10</span>
+            <span class="badge">LIVE : NON</span>
+            <span class="badge" id="deviceBadge">Appareil: calcul…</span>
+          </div>
+        </div>
 
-<button onclick="generateDemo()">Générer ma clé licence d’essai</button>
+        <div class="card">
+          <h2>Génération instantanée</h2>
+          <p>Votre licence démo personnelle sera créée par le système, enregistrée côté backend, puis liée définitivement à cet appareil.</p>
 
-<div id="result" class="keybox" style="display:none"></div>
+          <div class="actions">
+            <button id="btnGenerate" class="primary">Générer ma clé d’essai</button>
+            <a class="btn warn" href="index.html">Retour connexion</a>
+          </div>
 
-</div>
+          <div class="msg" id="msg">Cliquez sur <b>Générer ma clé d’essai</b> pour créer votre licence démo sécurisée.</div>
 
+          <div class="keybox" id="keyBox">
+            <div style="text-align:center;font-size:12px;color:rgba(255,255,255,.74);margin-bottom:8px">Votre clé démo sécurisée</div>
+            <div class="keyline" id="keyLine">DEMO-XXXX-XXXX-XXXX-XXXX</div>
+
+            <div class="actions" style="margin-top:14px">
+              <button id="btnCopy" class="primary" type="button">Copier la clé</button>
+              <button id="btnTryNow" class="warn" type="button">Essayer maintenant</button>
+            </div>
+          </div>
+
+          <div class="small">La même clé vous sera reproposée si cet ordinateur a déjà reçu une licence démo.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-line" style="width:min(820px,100%)"></div>
+    <div class="footer-row">© <span id="year"></span> Forex Capture Analyzer PRO</div>
+  </div>
+
+<script src="config.js"></script>
 <script>
+const SESSION_KEY = 'FXA_V28_SESSION';
+const DEFAULT_API_BASE = 'https://forex-capture-analyzer-multi-deploy-pack.onrender.com';
+const API_BASE = String((window.FXA_CONFIG && window.FXA_CONFIG.API_BASE) || DEFAULT_API_BASE).replace(/\/$/, '');
 
-function randomKey(){
-const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-function part(){
-let s="";
-for(let i=0;i<4;i++) s+=chars[Math.floor(Math.random()*chars.length)];
-return s;
-}
-return "DEMO-" + part()+"-"+part()+"-"+part();
+function apiUrl(path){
+  return API_BASE + path;
 }
 
-function generateDemo(){
+const msg = document.getElementById('msg');
+const keyBox = document.getElementById('keyBox');
+const keyLine = document.getElementById('keyLine');
+let currentDemo = null;
 
-const key = randomKey();
+function setMsg(text, type){
+  msg.innerHTML = text;
+  msg.style.borderColor =
+    type === 'ok' ? 'rgba(22,217,199,.28)' :
+    type === 'bad' ? 'rgba(255,88,110,.28)' :
+    'rgba(255,255,255,.08)';
 
-document.getElementById("result").style.display="block";
-document.getElementById("result").innerHTML=
-"Votre clé d’essai : <br><br><span style='font-size:20px;color:#16d9c7'>"
-+ key +
-"</span><br><br>Copiez cette clé et utilisez-la sur la page de connexion.<br><br>"
-+ "<a href='index.html' style='color:#ffee00'>Utiliser cette clé maintenant</a>";
-
+  msg.style.background =
+    type === 'ok' ? 'rgba(22,217,199,.08)' :
+    type === 'bad' ? 'rgba(255,88,110,.08)' :
+    'rgba(0,0,0,.18)';
 }
 
+async function sha256(text){
+  const enc = new TextEncoder().encode(text);
+  const hash = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(hash))
+    .map(b => b.toString(16).padStart(2,'0'))
+    .join('');
+}
+
+async function getDeviceId(){
+  const seed = [
+    navigator.userAgent || '',
+    navigator.platform || '',
+    navigator.language || '',
+    screen.width + 'x' + screen.height,
+    Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+    'FXA_V28_LOGIN'
+  ].join('|');
+
+  const hex = await sha256(seed);
+  return 'PC-' + hex.slice(0, 12).toUpperCase();
+}
+
+async function postJson(path, body){
+  const res = await fetch(apiUrl(path), {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body || {})
+  });
+
+  const contentType = res.headers.get('content-type') || '';
+  let data = null;
+
+  if (contentType.includes('application/json')) {
+    data = await res.json();
+  } else {
+    const raw = await res.text().catch(() => '');
+    throw new Error(raw ? 'Réponse serveur non JSON.' : 'Réponse serveur invalide.');
+  }
+
+  if (!res.ok) {
+    throw new Error(data.error || ('Erreur HTTP ' + res.status));
+  }
+
+  return data;
+}
+
+(async function boot(){
+  document.getElementById('year').textContent = new Date().getFullYear();
+  try {
+    const deviceId = await getDeviceId();
+    document.getElementById('deviceBadge').textContent = 'Appareil: ' + deviceId;
+  } catch {
+    document.getElementById('deviceBadge').textContent = 'Appareil: inconnu';
+  }
+})();
+
+document.getElementById('btnGenerate').addEventListener('click', async () => {
+  try {
+    setMsg('Génération sécurisée de votre clé démo en cours…', 'info');
+
+    const deviceId = await getDeviceId();
+    const clientMeta = {
+      ua: navigator.userAgent || '',
+      lang: navigator.language || '',
+      platform: navigator.platform || '',
+      source: 'cloudflare-pages',
+      appVersion: 'V28',
+      page: 'demo'
+    };
+
+    const result = await postJson('/api/license/demo/generate', {
+      deviceId,
+      clientMeta
+    });
+
+    if (!result || !result.ok || !result.license || !result.demoKey) {
+      setMsg('Réponse serveur invalide.', 'bad');
+      return;
+    }
+
+    currentDemo = {
+      key: result.demoKey,
+      token: result.token || '',
+      deviceId,
+      license: result.license
+    };
+
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
+      token: currentDemo.token,
+      deviceId: currentDemo.deviceId,
+      key: currentDemo.key
+    }));
+
+    document.getElementById('capturesLeft').textContent =
+      Number(result.license.analyses_remaining ?? 10);
+
+    keyLine.textContent = result.demoKey;
+    keyBox.style.display = 'block';
+
+    setMsg('Votre licence démo a été créée avec succès. Elle est liée à cet appareil et prête à être utilisée.', 'ok');
+  } catch(err) {
+    setMsg(err.message || 'Génération impossible.', 'bad');
+    console.error(err);
+  }
+});
+
+document.getElementById('btnCopy').addEventListener('click', async () => {
+  if (!currentDemo?.key) return;
+  try {
+    await navigator.clipboard.writeText(currentDemo.key);
+    setMsg('Clé démo copiée dans le presse-papiers.', 'ok');
+  } catch {
+    setMsg('Copie impossible automatiquement. Sélectionnez la clé et copiez-la manuellement.', 'bad');
+  }
+});
+
+document.getElementById('btnTryNow').addEventListener('click', () => {
+  if (!currentDemo?.key) {
+    setMsg('Générez d’abord votre clé démo.', 'bad');
+    return;
+  }
+  const target = 'index.html?demo_key=' + encodeURIComponent(currentDemo.key);
+  location.href = target;
+});
 </script>
-
 </body>
 </html>
