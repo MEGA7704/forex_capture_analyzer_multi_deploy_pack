@@ -24029,9 +24029,9 @@
       "device_id": "PC-A795C6DD903B",
       "device_locked": true,
       "activated_at": "2026-03-16T01:02:40.325Z",
-      "last_seen_at": "2026-03-16T01:02:40.325Z",
-      "last_ip_hash": null,
-      "session_count": 1,
+      "last_seen_at": "2026-03-16T01:02:59.815Z",
+      "last_ip_hash": "ip_160_154",
+      "session_count": 2,
       "analysis_count": 0,
       "error_reports": 0,
       "sos_reports": 0,
@@ -24044,8 +24044,7 @@
         "lang": "fr",
         "platform": "Win32",
         "source": "cloudflare-pages",
-        "appVersion": "V28",
-        "page": "demo"
+        "appVersion": "V28"
       }
     }
   ]
