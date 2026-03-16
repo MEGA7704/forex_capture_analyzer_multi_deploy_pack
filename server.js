@@ -184,6 +184,47 @@ function generateLicenseKey(prefix = 'FXA') {
   return `${prefix}-${randomLicenseBlock(4)}-${randomLicenseBlock(4)}-${randomLicenseBlock(4)}-${randomLicenseBlock(4)}`;
 }
 
+function findDemoLicenseByDevice(items, deviceId) {
+  const safeDeviceId = String(deviceId || '').trim();
+  if (!safeDeviceId) return null;
+  return (items || []).find((x) =>
+    String(x.plan_id || '').trim() === 'DEMO_10_CAPTURE'
+    && String(x.device_id || '').trim() === safeDeviceId
+  ) || null;
+}
+
+function buildDemoLicense(deviceId, clientMeta = {}) {
+  const issuedAt = nowIso().slice(0, 10);
+  return refreshComputedStatus({
+    license_key: generateLicenseKey('DEMO'),
+    plan_id: 'DEMO_10_CAPTURE',
+    plan_label: 'Démo 10 captures',
+    price_usdt: 0,
+    mode: 'count',
+    analysis_limit: 10,
+    analyses_remaining: 10,
+    duration_days: 365,
+    issued_at: issuedAt,
+    expiration: daysFromNowUtc(365),
+    status: 'active',
+    device_id: String(deviceId || '').trim(),
+    device_locked: true,
+    activated_at: nowIso(),
+    last_seen_at: nowIso(),
+    last_ip_hash: null,
+    session_count: 1,
+    analysis_count: 0,
+    error_reports: 0,
+    sos_reports: 0,
+    piracy_flags: 0,
+    live_allowed: false,
+    trial: true,
+    notes: 'Licence essai auto-générée',
+    client_meta: clientMeta
+  });
+}
+
+
 function daysFromNowUtc(days) {
   const d = new Date();
   d.setUTCDate(d.getUTCDate() + Math.max(0, Number(days || 0)));
@@ -552,6 +593,65 @@ app.get('/health', async (_req, res) => {
       githubSync: GITHUB_SYNC_ENABLED,
       githubRepo: GITHUB_REPO || null,
       githubBranch: GITHUB_SYNC_ENABLED ? GITHUB_BRANCH : null
+    });
+  } catch (err) {
+    return sendJson(res, 500, { ok: false, error: err.message });
+  }
+});
+
+
+app.post('/api/license/demo/generate', async (req, res) => {
+  try {
+    const deviceId = String(req.body?.deviceId || '').trim();
+    const clientMeta = req.body?.clientMeta || {};
+
+    if (!deviceId) {
+      return sendJson(res, 400, { ok: false, error: 'Identifiant appareil requis' });
+    }
+
+    const items = await listLicenses();
+    let license = findDemoLicenseByDevice(items, deviceId);
+
+    if (!license) {
+      const seen = new Set(items.map((x) => normalizeKey(x.license_key)).filter(Boolean));
+      do {
+        license = buildDemoLicense(deviceId, clientMeta);
+      } while (seen.has(normalizeKey(license.license_key)));
+
+      await writeLicenses([...items, license], `Create demo license for ${deviceId}`);
+      await appendEvent({
+        created_at: nowIso(),
+        event_type: 'demo_license_created',
+        license_key: license.license_key,
+        device_id: deviceId,
+        details: { clientMeta }
+      });
+    } else {
+      license.last_seen_at = nowIso();
+      license.client_meta = clientMeta;
+      await putLicense(license, `Reuse demo license ${license.license_key}`);
+      await appendEvent({
+        created_at: nowIso(),
+        event_type: 'demo_license_reused',
+        license_key: license.license_key,
+        device_id: deviceId,
+        details: { clientMeta }
+      });
+    }
+
+    const token = signToken({
+      sub: license.license_key,
+      device_id: deviceId,
+      role: 'client',
+      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 12)
+    }, LICENSE_SECRET);
+
+    return sendJson(res, 200, {
+      ok: true,
+      token,
+      demoKey: license.license_key,
+      redirect: '/app.html',
+      license: sanitizeLicenseForClient(license)
     });
   } catch (err) {
     return sendJson(res, 500, { ok: false, error: err.message });
