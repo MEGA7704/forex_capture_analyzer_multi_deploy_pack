@@ -601,5 +601,21 @@
         "appVersion": "V28"
       }
     }
+  },
+  {
+    "id": "evt_1773648745174_wmsnv8",
+    "created_at": "2026-03-16T08:12:25.173Z",
+    "event_type": "license_activation",
+    "license_key": "DEMO-CK7Y-EF8H-MTCB",
+    "device_id": "PC-3D48647D14C3",
+    "details": {
+      "clientMeta": {
+        "ua": "Mozilla/5.0 (Android 13; Mobile; rv:148.0) Gecko/148.0 Firefox/148.0",
+        "lang": "fr-FR",
+        "platform": "Linux armv81",
+        "source": "cloudflare-pages",
+        "appVersion": "V28"
+      }
+    }
   }
 ]
