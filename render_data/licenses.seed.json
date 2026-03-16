@@ -24053,6 +24053,34 @@
         "source": "cloudflare-pages",
         "appVersion": "V28"
       }
+    },
+    {
+      "license_key": "DEMO-CK7Y-EF8H-MTCB",
+      "plan_id": "DEMO_10_CAPTURE",
+      "plan_label": "Démo 10 captures",
+      "mode": "count",
+      "analysis_limit": 10,
+      "analysis_count": 0,
+      "device_id": "PC-3D48647D14C3",
+      "device_locked": true,
+      "live_allowed": false,
+      "issued_at": "2026-03-16T08:11:31.320Z",
+      "expiration": "2027-03-16T08:11:31.320Z",
+      "client_meta": {
+        "ua": "Mozilla/5.0 (Android 13; Mobile; rv:148.0) Gecko/148.0 Firefox/148.0",
+        "lang": "fr-FR",
+        "platform": "Linux armv81",
+        "source": "cloudflare-pages",
+        "appVersion": "V28",
+        "page": "demo"
+      },
+      "status": "active",
+      "session_count": 0,
+      "error_reports": 0,
+      "sos_reports": 0,
+      "piracy_flags": 0,
+      "duration_days": 0,
+      "analyses_remaining": 10
     }
   ]
 }
