@@ -24013,6 +24013,40 @@
       "sos_reports": 0,
       "piracy_flags": 0,
       "notes": ""
+    },
+    {
+      "license_key": "DEMO-5B5S-XQ6J-MKJV-PVPL",
+      "plan_id": "DEMO_10_CAPTURE",
+      "plan_label": "Démo 10 captures",
+      "price_usdt": 0,
+      "mode": "count",
+      "analysis_limit": 10,
+      "analyses_remaining": 10,
+      "duration_days": 365,
+      "issued_at": "2026-03-16",
+      "expiration": "2027-03-16",
+      "status": "active",
+      "device_id": "PC-A795C6DD903B",
+      "device_locked": true,
+      "activated_at": "2026-03-16T01:02:40.325Z",
+      "last_seen_at": "2026-03-16T01:02:40.325Z",
+      "last_ip_hash": null,
+      "session_count": 1,
+      "analysis_count": 0,
+      "error_reports": 0,
+      "sos_reports": 0,
+      "piracy_flags": 0,
+      "live_allowed": false,
+      "trial": true,
+      "notes": "Licence essai auto-générée",
+      "client_meta": {
+        "ua": "Mozilla/5.0 (Windows NT 6.1; rv:109.0) Gecko/20100101 Firefox/115.0",
+        "lang": "fr",
+        "platform": "Win32",
+        "source": "cloudflare-pages",
+        "appVersion": "V28",
+        "page": "demo"
+      }
     }
   ]
 }
