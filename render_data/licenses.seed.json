@@ -24083,6 +24083,34 @@
       "activated_at": "2026-03-16T08:12:23.859Z",
       "last_seen_at": "2026-03-16T08:13:59.529Z",
       "last_ip_hash": "ip_160_154"
+    },
+    {
+      "license_key": "DEMO-JDE4-EYJO-PZ70",
+      "plan_id": "DEMO_10_CAPTURE",
+      "plan_label": "Démo 10 captures",
+      "mode": "count",
+      "analysis_limit": 10,
+      "analysis_count": 0,
+      "device_id": "PC-DC7781F2579F",
+      "device_locked": true,
+      "live_allowed": false,
+      "issued_at": "2026-03-16T17:04:08.306Z",
+      "expiration": "2027-03-16T17:04:08.306Z",
+      "client_meta": {
+        "ua": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
+        "lang": "fr",
+        "platform": "Win32",
+        "source": "cloudflare-pages",
+        "appVersion": "V28",
+        "page": "demo"
+      },
+      "status": "active",
+      "session_count": 0,
+      "error_reports": 0,
+      "sos_reports": 0,
+      "piracy_flags": 0,
+      "duration_days": 0,
+      "analyses_remaining": 10
     }
   ]
 }
