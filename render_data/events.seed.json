@@ -520,5 +520,16 @@
       "source": "ui",
       "ts": "2026-03-16T01:13:57.167Z"
     }
+  },
+  {
+    "id": "evt_1773623656428_9xwusw",
+    "created_at": "2026-03-16T01:14:16.427Z",
+    "event_type": "analysis_run",
+    "license_key": "DEMO-5B5S-XQ6J-MKJV-PVPL",
+    "device_id": "PC-A795C6DD903B",
+    "details": {
+      "source": "ui",
+      "ts": "2026-03-16T01:14:13.205Z"
+    }
   }
 ]
