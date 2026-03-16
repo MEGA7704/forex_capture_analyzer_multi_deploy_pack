@@ -24071,16 +24071,18 @@
         "lang": "fr-FR",
         "platform": "Linux armv81",
         "source": "cloudflare-pages",
-        "appVersion": "V28",
-        "page": "demo"
+        "appVersion": "V28"
       },
       "status": "active",
-      "session_count": 0,
+      "session_count": 1,
       "error_reports": 0,
       "sos_reports": 0,
       "piracy_flags": 0,
       "duration_days": 0,
-      "analyses_remaining": 10
+      "analyses_remaining": 10,
+      "activated_at": "2026-03-16T08:12:23.859Z",
+      "last_seen_at": "2026-03-16T08:12:23.859Z",
+      "last_ip_hash": "ip_160_154"
     }
   ]
 }
