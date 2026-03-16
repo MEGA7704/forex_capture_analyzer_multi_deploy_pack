@@ -24101,16 +24101,18 @@
         "lang": "fr",
         "platform": "Win32",
         "source": "cloudflare-pages",
-        "appVersion": "V28",
-        "page": "demo"
+        "appVersion": "V28"
       },
       "status": "active",
-      "session_count": 0,
+      "session_count": 1,
       "error_reports": 0,
       "sos_reports": 0,
       "piracy_flags": 0,
       "duration_days": 0,
-      "analyses_remaining": 10
+      "analyses_remaining": 10,
+      "activated_at": "2026-03-16T17:04:19.483Z",
+      "last_seen_at": "2026-03-16T17:04:19.483Z",
+      "last_ip_hash": "ip_160_154"
     }
   ]
 }
