@@ -24104,14 +24104,14 @@
         "appVersion": "V28"
       },
       "status": "active",
-      "session_count": 2,
+      "session_count": 3,
       "error_reports": 0,
       "sos_reports": 0,
       "piracy_flags": 0,
       "duration_days": 0,
       "analyses_remaining": 6,
       "activated_at": "2026-03-16T17:04:19.483Z",
-      "last_seen_at": "2026-03-16T17:52:13.448Z",
+      "last_seen_at": "2026-03-17T08:45:47.457Z",
       "last_ip_hash": "ip_160_154"
     },
     {
