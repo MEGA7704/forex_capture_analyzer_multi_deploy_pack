@@ -347,7 +347,7 @@ async function githubGetJsonFile(remotePath) {
   }
 }
 
-async function githubPutJsonFile(remotePath, jsonData, message) {
+async function githubPutJsonFile(remotePath, jsonData, message, retryOnConflict = true) {
   if (!GITHUB_SYNC_ENABLED) return { ok: false, notConfigured: true };
 
   let sha = githubCache.remoteShaByPath[remotePath];
@@ -372,7 +372,17 @@ async function githubPutJsonFile(remotePath, jsonData, message) {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`GitHub write failed (${response.status}): ${text.slice(0, 180)}`);
+
+    if (response.status === 409 && retryOnConflict) {
+      githubCache.remoteShaByPath[remotePath] = null;
+      const fresh = await githubGetJsonFile(remotePath);
+      const nextSha = fresh.ok ? fresh.sha : null;
+      return githubPutJsonFile(remotePath, jsonData, message, false && nextSha);
+    }
+
+    const err = new Error(`GitHub write failed (${response.status}): ${text.slice(0, 180)}`);
+    err.githubStatus = response.status;
+    throw err;
   }
 
   const payload = await response.json();
@@ -387,30 +397,42 @@ async function syncDownFromGitHub(force = false) {
 
   await ensureFiles();
 
-  const remoteLicenses = await githubGetJsonFile(GITHUB_LICENSES_PATH);
-  if (remoteLicenses.ok) {
-    const normalizedPayload = Array.isArray(remoteLicenses.json)
-      ? { licenses: remoteLicenses.json }
-      : (remoteLicenses.json && typeof remoteLicenses.json === 'object'
-        ? remoteLicenses.json
-        : { licenses: [] });
+  try {
+    const remoteLicenses = await githubGetJsonFile(GITHUB_LICENSES_PATH);
+    if (remoteLicenses.ok) {
+      const normalizedPayload = Array.isArray(remoteLicenses.json)
+        ? { licenses: remoteLicenses.json }
+        : (remoteLicenses.json && typeof remoteLicenses.json === 'object'
+          ? remoteLicenses.json
+          : { licenses: [] });
 
-    await writeJsonSafe(LICENSE_FILE, normalizedPayload);
-  } else if (remoteLicenses.notFound) {
-    const local = await readJsonSafe(LICENSE_FILE, { licenses: [] });
-    await githubPutJsonFile(GITHUB_LICENSES_PATH, local, 'Initialize licenses from Render seed');
+      await writeJsonSafe(LICENSE_FILE, normalizedPayload);
+    } else if (remoteLicenses.notFound) {
+      const local = await readJsonSafe(LICENSE_FILE, { licenses: [] });
+      try {
+        await githubPutJsonFile(GITHUB_LICENSES_PATH, local, 'Initialize licenses from Render seed');
+      } catch (err) {
+        console.error('GitHub init licenses non bloquant:', err.message);
+      }
+    }
+
+    const remoteEvents = await githubGetJsonFile(GITHUB_EVENTS_PATH);
+    if (remoteEvents.ok) {
+      const safeEvents = Array.isArray(remoteEvents.json) ? remoteEvents.json : [];
+      await writeJsonSafe(EVENTS_FILE, safeEvents);
+    } else if (remoteEvents.notFound) {
+      const localEvents = await readJsonSafe(EVENTS_FILE, []);
+      try {
+        await githubPutJsonFile(GITHUB_EVENTS_PATH, localEvents, 'Initialize events from Render seed');
+      } catch (err) {
+        console.error('GitHub init events non bloquant:', err.message);
+      }
+    }
+
+    githubCache.lastPullAt = Date.now();
+  } catch (err) {
+    console.error('GitHub syncDown non bloquant:', err.message);
   }
-
-  const remoteEvents = await githubGetJsonFile(GITHUB_EVENTS_PATH);
-  if (remoteEvents.ok) {
-    const safeEvents = Array.isArray(remoteEvents.json) ? remoteEvents.json : [];
-    await writeJsonSafe(EVENTS_FILE, safeEvents);
-  } else if (remoteEvents.notFound) {
-    const localEvents = await readJsonSafe(EVENTS_FILE, []);
-    await githubPutJsonFile(GITHUB_EVENTS_PATH, localEvents, 'Initialize events from Render seed');
-  }
-
-  githubCache.lastPullAt = Date.now();
 }
 
 async function persistLicenses(items, reason = 'Update licenses') {
@@ -418,8 +440,12 @@ async function persistLicenses(items, reason = 'Update licenses') {
   await writeJsonSafe(LICENSE_FILE, payload);
 
   if (GITHUB_SYNC_ENABLED) {
-    await githubPutJsonFile(GITHUB_LICENSES_PATH, payload, reason);
-    githubCache.lastPullAt = Date.now();
+    try {
+      await githubPutJsonFile(GITHUB_LICENSES_PATH, payload, reason);
+      githubCache.lastPullAt = Date.now();
+    } catch (err) {
+      console.error('GitHub persist licenses non bloquant:', err.message);
+    }
   }
 }
 
@@ -428,8 +454,12 @@ async function persistEvents(items, reason = 'Update events') {
   await writeJsonSafe(EVENTS_FILE, safeItems);
 
   if (GITHUB_SYNC_ENABLED) {
-    await githubPutJsonFile(GITHUB_EVENTS_PATH, safeItems, reason);
-    githubCache.lastPullAt = Date.now();
+    try {
+      await githubPutJsonFile(GITHUB_EVENTS_PATH, safeItems, reason);
+      githubCache.lastPullAt = Date.now();
+    } catch (err) {
+      console.error('GitHub persist events non bloquant:', err.message);
+    }
   }
 }
 
@@ -558,33 +588,32 @@ app.get('/health', async (_req, res) => {
   }
 });
 
-
 app.post('/api/license/demo/generate', async (req, res) => {
   try {
     const deviceId = String(req.body?.deviceId || '').trim();
     const clientMeta = req.body?.clientMeta || {};
 
     if (!deviceId) {
-      return sendJson(res, 400, { ok:false, error:'deviceId manquant' });
+      return sendJson(res, 400, { ok: false, error: 'deviceId manquant' });
     }
 
     const items = await listLicenses();
 
-    let existing = items.find(x =>
-      String(x.plan_id || '').trim() === 'DEMO_10_CAPTURE' &&
-      String(x.device_id || '').trim() === deviceId
+    let existing = items.find((x) =>
+      String(x.plan_id || '').trim() === 'DEMO_10_CAPTURE'
+      && String(x.device_id || '').trim() === deviceId
     );
 
     if (existing) {
       const token = signToken({
         sub: existing.license_key,
         device_id: deviceId,
-        role:'client',
-        exp: Math.floor(Date.now()/1000)+(60*60*12)
+        role: 'client',
+        exp: Math.floor(Date.now() / 1000) + (60 * 60 * 12)
       }, LICENSE_SECRET);
 
-      return sendJson(res,200,{
-        ok:true,
+      return sendJson(res, 200, {
+        ok: true,
         demoKey: existing.license_key,
         token,
         license: sanitizeLicenseForClient(existing)
@@ -593,24 +622,24 @@ app.post('/api/license/demo/generate', async (req, res) => {
 
     const key =
       'DEMO-' +
-      Math.random().toString(36).substring(2,6).toUpperCase() + '-' +
-      Math.random().toString(36).substring(2,6).toUpperCase() + '-' +
-      Math.random().toString(36).substring(2,6).toUpperCase();
+      Math.random().toString(36).substring(2, 6).toUpperCase() + '-' +
+      Math.random().toString(36).substring(2, 6).toUpperCase() + '-' +
+      Math.random().toString(36).substring(2, 6).toUpperCase();
 
     const license = normalizeLicenseShape({
-      license_key:key,
-      plan_id:'DEMO_10_CAPTURE',
-      plan_label:'Démo 10 captures',
-      mode:'count',
-      analysis_limit:10,
-      analysis_count:0,
-      device_id:deviceId,
-      device_locked:true,
-      live_allowed:false,
+      license_key: key,
+      plan_id: 'DEMO_10_CAPTURE',
+      plan_label: 'Démo 10 captures',
+      mode: 'count',
+      analysis_limit: 10,
+      analysis_count: 0,
+      device_id: deviceId,
+      device_locked: true,
+      live_allowed: false,
       issued_at: nowIso(),
-      expiration: new Date(Date.now()+365*24*3600*1000).toISOString(),
-      client_meta:clientMeta,
-      status:'active'
+      expiration: new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString(),
+      client_meta: clientMeta,
+      status: 'active'
     });
 
     await writeLicenses([...items, license], 'create demo license');
@@ -618,19 +647,18 @@ app.post('/api/license/demo/generate', async (req, res) => {
     const token = signToken({
       sub: license.license_key,
       device_id: deviceId,
-      role:'client',
-      exp: Math.floor(Date.now()/1000)+(60*60*12)
+      role: 'client',
+      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 12)
     }, LICENSE_SECRET);
 
-    return sendJson(res,200,{
-      ok:true,
-      demoKey:key,
+    return sendJson(res, 200, {
+      ok: true,
+      demoKey: key,
       token,
       license: sanitizeLicenseForClient(license)
     });
-
-  } catch(err){
-    return sendJson(res,500,{ ok:false, error:err.message });
+  } catch (err) {
+    return sendJson(res, 500, { ok: false, error: err.message });
   }
 });
 
