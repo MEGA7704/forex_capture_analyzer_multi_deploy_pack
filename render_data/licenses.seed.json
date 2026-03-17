@@ -24120,7 +24120,7 @@
       "plan_label": "Démo 10 captures",
       "mode": "count",
       "analysis_limit": 10,
-      "analysis_count": 1,
+      "analysis_count": 0,
       "device_id": "PC-4EEEEE3AD841",
       "device_locked": true,
       "live_allowed": false,
@@ -24134,14 +24134,14 @@
         "appVersion": "V28"
       },
       "status": "active",
-      "session_count": 2,
+      "session_count": 3,
       "error_reports": 0,
       "sos_reports": 0,
       "piracy_flags": 0,
       "duration_days": 0,
-      "analyses_remaining": 9,
+      "analyses_remaining": 10,
       "activated_at": "2026-03-17T00:14:29.876Z",
-      "last_seen_at": "2026-03-17T00:21:44.557Z",
+      "last_seen_at": "2026-03-17T00:21:57.610Z",
       "last_ip_hash": "ip_160_154"
     }
   ]
