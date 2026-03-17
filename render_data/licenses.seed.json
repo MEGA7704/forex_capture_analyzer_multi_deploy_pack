@@ -24113,6 +24113,34 @@
       "activated_at": "2026-03-16T17:04:19.483Z",
       "last_seen_at": "2026-03-16T17:52:13.448Z",
       "last_ip_hash": "ip_160_154"
+    },
+    {
+      "license_key": "DEMO-YW3Q-VVBZ-81VU",
+      "plan_id": "DEMO_10_CAPTURE",
+      "plan_label": "Démo 10 captures",
+      "mode": "count",
+      "analysis_limit": 10,
+      "analysis_count": 0,
+      "device_id": "PC-4EEEEE3AD841",
+      "device_locked": true,
+      "live_allowed": false,
+      "issued_at": "2026-03-17T00:14:05.227Z",
+      "expiration": "2027-03-17T00:14:05.227Z",
+      "client_meta": {
+        "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0",
+        "lang": "fr",
+        "platform": "Win32",
+        "source": "cloudflare-pages",
+        "appVersion": "V28",
+        "page": "demo"
+      },
+      "status": "active",
+      "session_count": 0,
+      "error_reports": 0,
+      "sos_reports": 0,
+      "piracy_flags": 0,
+      "duration_days": 0,
+      "analyses_remaining": 10
     }
   ]
 }
