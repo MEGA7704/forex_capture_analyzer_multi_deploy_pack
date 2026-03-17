@@ -951,5 +951,21 @@
         "appVersion": "V28"
       }
     }
+  },
+  {
+    "id": "evt_1773790152276_xd4osg",
+    "created_at": "2026-03-17T23:29:12.275Z",
+    "event_type": "license_login",
+    "license_key": "FXA-LDXN-3U2H-RQW4-GY6Z",
+    "device_id": "PC-A795C6DD903B",
+    "details": {
+      "clientMeta": {
+        "ua": "Mozilla/5.0 (Windows NT 6.1; rv:109.0) Gecko/20100101 Firefox/115.0",
+        "lang": "fr",
+        "platform": "Win32",
+        "source": "cloudflare-pages",
+        "appVersion": "V28"
+      }
+    }
   }
 ]
