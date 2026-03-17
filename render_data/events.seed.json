@@ -693,5 +693,21 @@
         "appVersion": "V28"
       }
     }
+  },
+  {
+    "id": "evt_1773706471119_n5tuxj",
+    "created_at": "2026-03-17T00:14:31.118Z",
+    "event_type": "license_activation",
+    "license_key": "DEMO-YW3Q-VVBZ-81VU",
+    "device_id": "PC-4EEEEE3AD841",
+    "details": {
+      "clientMeta": {
+        "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0",
+        "lang": "fr",
+        "platform": "Win32",
+        "source": "cloudflare-pages",
+        "appVersion": "V28"
+      }
+    }
   }
 ]
